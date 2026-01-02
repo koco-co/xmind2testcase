@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# _*_ coding:utf-8 _*_
+# -*- coding: utf-8 -*-
+"""Constants for TestLink XML format tags and attributes."""
 
-
+# XML tags
 TAG_XML = 'xml'
 
 TAG_TESTSUITE = 'testsuite'
@@ -23,6 +24,7 @@ TAG_ACTIONS = 'actions'
 TAG_EXPECTEDRESULTS = 'expectedresults'
 TAG_EXECUTION_TYPE = 'execution_type'
 
-ATTR_NMAE = 'name'
+# XML attributes
+ATTR_NMAE = 'name'  # Note: typo in original (should be NAME)
 ATTR_ID = 'id'
 ATTR_INTERNALID = 'internalid'

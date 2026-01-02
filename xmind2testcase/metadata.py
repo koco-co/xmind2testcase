@@ -1,21 +1,39 @@
 #!/usr/bin/env python
-# _*_ coding:utf-8 _*_
-
-"""
-testlink.testlink
-"""
+# -*- coding: utf-8 -*-
+"""Metadata classes for test suites, test cases, and test steps."""
+from typing import Dict, List, Optional, Any
 
 
-class TestSuite(object):
+class TestSuite:
+    """Represents a test suite containing test cases and sub-suites.
 
-    def __init__(self, name='', details='', testcase_list=None, sub_suites=None, statistics=None):
-        """
-        TestSuite
-        :param name: test suite name
-        :param details: test suite detail infomation
-        :param testcase_list: test case list
-        :param sub_suites: sub test suite list
-        :param statistics: testsuite statistics info {'case_num': 0, 'non_execution': 0, 'pass': 0, 'failed': 0, 'blocked': 0, 'skipped': 0}
+    Attributes:
+        name: Test suite name.
+        details: Test suite detail information.
+        testcase_list: List of test cases in this suite.
+        sub_suites: List of sub test suites.
+        statistics: Test suite statistics info with keys:
+            'case_num', 'non_execution', 'pass', 'failed', 'blocked', 'skipped'.
+    """
+
+    def __init__(
+        self,
+        name: str = '',
+        details: str = '',
+        testcase_list: Optional[List['TestCase']] = None,
+        sub_suites: Optional[List['TestSuite']] = None,
+        statistics: Optional[Dict[str, int]] = None
+    ) -> None:
+        """Initialize a TestSuite instance.
+
+        Args:
+            name: Test suite name.
+            details: Test suite detail information.
+            testcase_list: Test case list.
+            sub_suites: Sub test suite list.
+            statistics: Test suite statistics info with keys:
+                'case_num', 'non_execution', 'pass', 'failed', 'blocked',
+                'skipped'.
         """
         self.name = name
         self.details = details
@@ -23,8 +41,13 @@ class TestSuite(object):
         self.sub_suites = sub_suites
         self.statistics = statistics
 
-    def to_dict(self):
-        data = {
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the test suite to a dictionary.
+
+        Returns:
+            Dictionary representation of the test suite.
+        """
+        data: Dict[str, Any] = {
             'name': self.name,
             'details': self.details,
             'testcase_list': [],
@@ -45,21 +68,52 @@ class TestSuite(object):
         return data
 
 
-class TestCase(object):
+class TestCase:
+    """Represents a test case with steps and metadata.
 
-    def __init__(self, name='', version=1, summary='', preconditions='', execution_type=1, importance=2, estimated_exec_duration=3, status=7, result=0, steps=None):
-        """
-        TestCase
-        :param name: test case name
-        :param version: test case version infomation
-        :param summary: test case summary infomation
-        :param preconditions: test case pre condition
-        :param execution_type: manual:1 or automate:2
-        :param importance: high:1, middle:2, low:3
-        :param estimated_exec_duration: estimated execution duration
-        :param status: draft:1, ready ro review:2, review in progress:3, rework:4, obsolete:5, future:6, final:7
-        :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
-        :param steps: test case step list
+    Attributes:
+        name: Test case name.
+        version: Test case version information.
+        summary: Test case summary information.
+        preconditions: Test case preconditions.
+        execution_type: Execution type (1=manual, 2=automated).
+        importance: Importance level (1=high, 2=middle, 3=low).
+        estimated_exec_duration: Estimated execution duration.
+        status: Test case status (1=draft, 2=ready to review,
+            3=review in progress, 4=rework, 5=obsolete, 6=future, 7=final).
+        result: Test result (0=non-execution, 1=pass, 2=failed,
+            3=blocked, 4=skipped).
+        steps: List of test steps.
+    """
+
+    def __init__(
+        self,
+        name: str = '',
+        version: int = 1,
+        summary: str = '',
+        preconditions: str = '',
+        execution_type: int = 1,
+        importance: int = 2,
+        estimated_exec_duration: int = 3,
+        status: int = 7,
+        result: int = 0,
+        steps: Optional[List['TestStep']] = None
+    ) -> None:
+        """Initialize a TestCase instance.
+
+        Args:
+            name: Test case name.
+            version: Test case version information.
+            summary: Test case summary information.
+            preconditions: Test case preconditions.
+            execution_type: Manual (1) or automated (2).
+            importance: High (1), middle (2), or low (3).
+            estimated_exec_duration: Estimated execution duration.
+            status: Draft (1), ready to review (2), review in progress (3),
+                rework (4), obsolete (5), future (6), final (7).
+            result: Non-execution (0), pass (1), failed (2), blocked (3),
+                skipped (4).
+            steps: Test case step list.
         """
         self.name = name
         self.version = version
@@ -72,16 +126,21 @@ class TestCase(object):
         self.result = result
         self.steps = steps
 
-    def to_dict(self):
-        data = {
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the test case to a dictionary.
+
+        Returns:
+            Dictionary representation of the test case.
+        """
+        data: Dict[str, Any] = {
             'name': self.name,
-            'version': self.version,  # TODO(devin): get version content
+            'version': self.version,
             'summary': self.summary,
             'preconditions': self.preconditions,
             'execution_type': self.execution_type,
             'importance': self.importance,
-            'estimated_exec_duration': self.estimated_exec_duration,  # TODO(devin): get estimated content
-            'status': self.status,  # TODO(devin): get status content
+            'estimated_exec_duration': self.estimated_exec_duration,
+            'status': self.status,
             'result': self.result,
             'steps': []
         }
@@ -93,31 +152,53 @@ class TestCase(object):
         return data
 
 
-class TestStep(object):
+class TestStep:
+    """Represents a single test step within a test case.
 
-    def __init__(self, step_number=1, actions='', expectedresults='', execution_type=1, result=0):
-        """
-        TestStep
-        :param step_number: test step number
-        :param actions: test step actions
-        :param expectedresults: test step expected results
-        :param execution_type: test step execution type
-        :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
+    Attributes:
+        step_number: Test step number.
+        actions: Test step actions.
+        expectedresults: Test step expected results.
+        execution_type: Test step execution type (1=manual, 2=automated).
+        result: Test result (0=non-execution, 1=pass, 2=failed,
+            3=blocked, 4=skipped).
+    """
+
+    def __init__(
+        self,
+        step_number: int = 1,
+        actions: str = '',
+        expectedresults: str = '',
+        execution_type: int = 1,
+        result: int = 0
+    ) -> None:
+        """Initialize a TestStep instance.
+
+        Args:
+            step_number: Test step number.
+            actions: Test step actions.
+            expectedresults: Test step expected results.
+            execution_type: Test step execution type (1=manual, 2=automated).
+            result: Non-execution (0), pass (1), failed (2), blocked (3),
+                skipped (4).
         """
         self.step_number = step_number
         self.actions = actions
         self.expectedresults = expectedresults
-        self.execution_type = execution_type  # TODO(devin): get execution type content
+        self.execution_type = execution_type
         self.result = result
 
-    def to_dict(self):
-        data = {
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the test step to a dictionary.
+
+        Returns:
+            Dictionary representation of the test step.
+        """
+        return {
             'step_number': self.step_number,
             'actions': self.actions,
             'expectedresults': self.expectedresults,
             'execution_type': self.execution_type,
             'result': self.result
         }
-
-        return data
 
