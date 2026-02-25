@@ -465,15 +465,13 @@ uv publish
 
 MIT License
 
-Copyright (c) 2019 Devin https://zhangchuzhao.site
-Copyright (c) 2017 Toby Qin
+Copyright (c) 2019 Poco https://github.com/koco-co
 
 ---
 
 <div align="center">
-
 **[⬆ 返回顶部](#xmind2testcase)**
 
-Made with ❤️ by [Devin](https://zhangchuzhao.site) and contributors
+Made with ❤️ by [Poco](https://github.com/koco-co) and contributors
 
 </div>
