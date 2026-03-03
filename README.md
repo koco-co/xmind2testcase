@@ -19,18 +19,57 @@
 
 ### 一键启动
 
+**macOS/Linux 用户:**
+
 ```bash
-# 克隆项目
+# 1. 克隆项目
 git clone https://github.com/koco-co/xmind2cases.git
 cd xmind2cases
 
-# 一键启动（自动配置环境并启动 Web 工具）
+# 2. 一键启动（自动安装 uv、配置依赖并启动 Web 工具）
 ./init.sh
 ```
 
+**Windows 用户:**
+
+```powershell
+# 1. 克隆项目
+git clone https://github.com/koco-co/xmind2cases.git
+cd xmind2cases
+
+# 2. 一键启动（PowerShell）
+.\init.ps1
+```
+
+**✨ 脚本会自动:**
+- ✅ 检测并安装 [uv](https://github.com/astral-sh/uv)（极速 Python 包管理器）
+- ✅ 同步项目依赖
+- ✅ 检测端口占用并提供交互式选项
+- ✅ 启动 Web 工具（http://localhost:5002）
+
 **前置要求:**
-- Python 3.12.12 或更高版本
-- macOS/Linux，或 Windows (WSL/Git Bash)
+- **操作系统**: macOS、Linux 或 Windows
+- **无需预装 Python**: uv 会自动安装 Python 3.12+
+- **无需预装 uv**: 脚本会提示自动安装
+
+### 手动安装
+
+如果你更喜欢手动安装:
+
+```bash
+# 安装 uv
+curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
+# 或
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"  # Windows
+
+# 同步依赖
+uv sync
+
+# 启动 Web 工具
+uv run python webtool/application.py  # Flask 版本（推荐）
+# 或
+uv run python -m uvicorn api.main:app --reload  # FastAPI 版本
+```
 
 ### 发布流程
 

@@ -68,16 +68,64 @@ check_uv() {
         print_success "uv 已安装: $uv_version"
         return 0
     else
-        print_warning "uv 未安装，正在安装..."
-        if curl -LsSf https://astral.sh/uv/install.sh | sh; then
-            export PATH="$HOME/.local/bin:$PATH"
-            print_success "uv 安装完成"
-            return 0
-        else
-            print_error "uv 安装失败"
-            print_info "请手动安装: https://github.com/astral-sh/uv"
-            exit 1
-        fi
+        print_warning "uv 未安装"
+        echo ""
+        print_info "uv 是一个极速的 Python 包管理器，本项目需要它来管理依赖"
+        echo ""
+
+        # 询问用户是否自动安装
+        local max_retries=3
+        local retry_count=0
+
+        while [ $retry_count -lt $max_retries ]; do
+            echo -ne "\033[1;33m是否自动安装 uv? [Y/n]: \033[0m"
+            read -r -t 60 ANSWER || ANSWER="y"
+            echo ""
+
+            case $(echo "$ANSWER" | tr '[:upper:]' '[:lower:]') in
+                y|yes|"")
+                    print_info "正在安装 uv..."
+                    if curl -LsSf https://astral.sh/uv/install.sh | sh; then
+                        export PATH="$HOME/.local/bin:$PATH"
+                        print_success "uv 安装完成"
+                        return 0
+                    else
+                        print_error "uv 安装失败"
+                        echo ""
+
+                        if [ $retry_count -lt $((max_retries - 1)) ]; then
+                            print_info "等待 3 秒后重试..."
+                            sleep 3
+                            retry_count=$((retry_count + 1))
+                        else
+                            echo ""
+                            print_info "手动安装方法:"
+                            echo "  macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh"
+                            echo "  Windows: powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+                            echo ""
+                            print_info "或访问: https://github.com/astral-sh/uv?tab=readme-ov-file#installation"
+                            exit 1
+                        fi
+                    fi
+                    ;;
+                n|no)
+                    print_error "用户取消安装"
+                    echo ""
+                    print_info "手动安装方法:"
+                    echo "  macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh"
+                    echo "  Windows: powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+                    echo ""
+                    print_info "或访问: https://github.com/astral-sh/uv?tab=readme-ov-file#installation"
+                    exit 1
+                    ;;
+                *)
+                    print_error "无效输入，请输入 y 或 n"
+                    retry_count=$((retry_count + 1))
+                    ;;
+            esac
+        done
+
+        exit 1
     fi
 }
 
