@@ -33,7 +33,26 @@
     </script>
 </head>
 <body class="bg-slate-50 font-sans text-slate-600">
-<div class="splash-container">
+    <!-- 顶部导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="ml-2 text-xl font-semibold text-slate-900">XMind2TestCase</span>
+                </div>
+                <div class="text-sm text-slate-500">思维导图转测试用例</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 保留现有的内容,将在后续任务中重构 -->
+            <div class="splash-container">
     <div class="splash">
         <h1>
             Xmind to TestCase
@@ -84,6 +103,8 @@
             Powered by <a href="https://github.com/zhuifengshen/xmind2testcase" target="_blank">XMind2TestCase</a>
         </div>
     </div>
+        </div>
+    </main>
 
 </div>
 
