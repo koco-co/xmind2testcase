@@ -211,6 +211,41 @@ install_tools() {
     print_success "开发工具检查完成"
 }
 
+# 设置环境
+setup_environment() {
+    print_step "配置 Python 环境..."
+
+    # 创建虚拟环境
+    if [[ ! -d ".venv" ]]; then
+        print_info "创建虚拟环境..."
+        uv venv --python 3.12
+    else
+        print_info "虚拟环境已存在"
+    fi
+
+    # 安装依赖
+    print_info "安装项目依赖..."
+    if uv sync; then
+        print_success "依赖安装完成"
+    else
+        print_error "依赖安装失败"
+        exit 1
+    fi
+
+    # 安装 pre-commit hooks
+    if command -v pre-commit &> /dev/null; then
+        print_info "安装 pre-commit hooks..."
+        if [[ -f ".pre-commit-config.yaml" ]]; then
+            uv run pre-commit install
+            print_success "pre-commit hooks 安装完成"
+        else
+            print_info "未找到 .pre-commit-config.yaml，跳过 hooks 安装"
+        fi
+    fi
+
+    print_success "环境配置完成"
+}
+
 # 参数解析
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
