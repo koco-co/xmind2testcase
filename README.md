@@ -185,6 +185,55 @@ python -m xmind2testcase.cli webtool 8000
 python -c "from webtool.application import launch; launch(port=8000)"
 ```
 
+#### FastAPI 服务
+
+项目提供基于 FastAPI 的异步 REST API 服务，用于 XMind 到测试用例的转换和管理。
+
+```bash
+# 开发环境（自动重载）
+uvicorn api.main:app --reload
+
+# 生产环境
+uvicorn api.main:app --host 0.0.0.0 --workers 4
+
+# 使用 CLI（默认端口 8000）
+python -m xmind2testcase.cli webtool
+
+# 自定义端口
+python -m xmind2testcase.cli webtool 9000
+```
+
+**API 文档：**
+
+启动服务后访问：
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+**API 端点：**
+
+#### 健康检查
+- `GET /health` - 服务健康检查
+- `GET /health/database` - 数据库健康检查
+
+#### 记录管理
+- `GET /api/v1/records` - 获取记录列表
+- `POST /api/v1/records` - 上传 XMind 文件
+- `GET /api/v1/records/{id}` - 获取记录详情
+
+**数据库：**
+
+使用 SQLite 数据库存储，支持迁移：
+
+```bash
+# 创建新迁移
+alembic revision --autogenerate -m "description"
+
+# 执行迁移
+alembic upgrade head
+```
+
+详细 API 文档请参考：[API 文档](api/README.md)
+
 ---
 
 ## 💡 使用指南
