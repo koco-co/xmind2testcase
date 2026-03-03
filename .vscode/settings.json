@@ -1,8 +1,13 @@
 {
   "cSpell.words": [
-    "asyncio",
+    "enabledelayedexpansion",
+    "errorlevel",
     "filterwarnings",
+    "htmlcov",
+    "pypi",
+    "pyproject",
     "pytest",
+    "setlocal",
     "testpaths",
     "webtool",
     "xmind",
