@@ -6,6 +6,18 @@ from api.routes import health, records
 from api.core.exceptions import Xmind2CasesError
 from fastapi.responses import JSONResponse
 from fastapi import Request
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时执行
+    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+    Path("data").mkdir(parents=True, exist_ok=True)
+    yield
+    # 关闭时执行（如果需要）
 
 
 # 创建 FastAPI 应用
@@ -15,6 +27,7 @@ app = FastAPI(
     debug=settings.DEBUG,
     docs_url="/docs" if settings.DOCS_ENABLED else None,
     redoc_url="/redoc" if settings.DOCS_ENABLED else None,
+    lifespan=lifespan,
 )
 
 # CORS 中间件
@@ -45,15 +58,6 @@ async def xmind2cases_exception_handler(request: Request, exc: Xmind2CasesError)
             }
         },
     )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """应用启动事件"""
-    from pathlib import Path
-
-    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
-    Path("data").mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":
