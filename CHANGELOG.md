@@ -5,21 +5,25 @@
 ## [1.6.1] - 2026-03-04
 
 ### Added
+
 - ✨ 支持 Windows 一键启动（init.bat/init.ps1）
 - ✨ 端口占用检测和交互式处理
 - ✨ UI 优化：图标化操作、紧凑布局、长文件名智能截断
 
 ### Changed
+
 - 🔄 包名从 xmind2testcase 重命名为 xmind2cases
 - 📝 优化文档结构，删除重复内容
 
 ### Fixed
+
 - 🐛 修复禅道 CSV 导出格式问题：所有字段用双引号包裹
 - 🐛 修复前置条件中的换行符转换为 `<br>` 标签
 
 ## [1.6.0] - 2026-03-03
 
 ### Added
+
 - ✨ 一键初始化脚本 init.sh，支持环境配置和发布流程
 - 🐍 Python 最低版本提升至 3.12.12
 - 🔧 集成现代化开发工具：ruff, pyright, pre-commit, rich
@@ -29,6 +33,7 @@
 - 📝 添加项目开发文档
 
 ### Changed
+
 - 🔄 项目重命名为 xmind2cases（原 xmind2testcase）
 - 📦 使用 uv 替代 setuptools 进行构建和发布
 - ♻️ 底层解析库从 xmind 切换到 xmindparser
@@ -37,33 +42,40 @@
 - 更新所有文档和命令名称
 
 ### Removed
+
 - 🗑️ 删除过时的配置文件：pytest.ini, requirements.txt
 - 移除对旧版本 Python 的支持（< 3.12.12）
 
 ### Fixed
+
 - 🐛 修复 xmind2026 文件解析乱码问题
 
 ### 新增
+
 - ✨ 支持 XMind 2026 文件格式（JSON 格式）
 - ✨ 同时兼容 XMind 8 及以前版本（XML 格式）
 - 🧪 添加完整的测试套件（单元、集成、E2E）
 - 📝 添加项目开发文档
 
 ### 变更
+
 - ♻️ 底层解析库从 xmind 切换到 xmindparser
 - ⚠️ 错误处理更严格：文件不存在或格式错误时抛出异常
 - 🔧 改进数据验证和错误提示
 
 ### 修复
+
 - 🐛 修复 xmind2026 文件解析乱码问题
 
 ### 技术细节
+
 - 添加 `normalize_xmind_data()` 适配器函数处理字段映射
 - 字段映射：`makers` → `markers`, `labels` → `label`
 - 测试覆盖率达到 56%+
 - 总测试数量：19 个（11 单元测试 + 6 集成测试 + 2 E2E 测试）
 
 ### 测试验证
+
 - ✅ xmind8 文件解析和转换验证通过
 - ✅ xmind2026 文件解析和转换验证通过
 - ✅ 两种格式输出一致性验证通过

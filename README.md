@@ -39,17 +39,17 @@ cd xmind2cases
 # 方式 2: 命令行运行
 init.bat
 
-# 方式 3: PowerShell（更强大的功能）
-.\init.ps1
 ```
 
 **✨ 脚本会自动:**
+
 - ✅ 检测并安装 [uv](https://github.com/astral-sh/uv)（极速 Python 包管理器）
 - ✅ 同步项目依赖
 - ✅ 检测端口占用并提供交互式选项
 - ✅ 启动 Web 工具（http://localhost:5002）
 
 **前置要求:**
+
 - **操作系统**: macOS、Linux 或 Windows
 - **无需预装 Python**: uv 会自动安装 Python 3.12+
 - **无需预装 uv**: 脚本会提示自动安装
@@ -90,11 +90,11 @@ uv run python -m uvicorn api.main:app --reload  # FastAPI 版本
 
 传统的测试用例设计过程存在诸多痛点：
 
-| 方式 | 优点 | 缺点 |
-|------|------|------|
-| **Excel 表格** | 成本低 | 版本管理麻烦、维护更新耗时、评审繁琐、统计困难 |
-| **TestLink/TestCenter** | 管理、执行、统计方便 | 编写效率不高、思维不够发散、快速迭代中耗时 |
-| **自研测试管理工具** | 高度定制 | 研发维护成本高、技术要求高 |
+| 方式                    | 优点                 | 缺点                                           |
+| ----------------------- | -------------------- | ---------------------------------------------- |
+| **Excel 表格**          | 成本低               | 版本管理麻烦、维护更新耗时、评审繁琐、统计困难 |
+| **TestLink/TestCenter** | 管理、执行、统计方便 | 编写效率不高、思维不够发散、快速迭代中耗时     |
+| **自研测试管理工具**    | 高度定制             | 研发维护成本高、技术要求高                     |
 
 ### 解决方案
 
@@ -180,6 +180,7 @@ xmind2cases /path/to/testcase.xmind -json
 #### 输出文件
 
 执行后会生成以下文件：
+
 - `testcase.csv` - 禅道导入格式
 - `testcase.xml` - TestLink 导入格式
 - `testcase.json` - 通用 JSON 格式
@@ -305,19 +306,19 @@ testcases = get_xmind_testcase_list(xmind_file)
 
 **字段说明：**
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `name` | string | 用例标题 |
-| `version` | int | 用例版本 |
-| `summary` | string | 用例摘要 |
-| `preconditions` | string | 前置条件 |
-| `execution_type` | int | 执行类型（1: 手动, 2: 自动） |
-| `importance` | int | 优先级（1: 高, 2: 中, 3: 低） |
-| `estimated_exec_duration` | int | 预计执行时间（分钟） |
-| `status` | int | 状态（1: 草稿, 2: 待评审, ..., 7: 终稿） |
-| `steps` | array | 测试步骤列表 |
-| `product` | string | 产品名称 |
-| `suite` | string | 测试集名称 |
+| 字段                      | 类型   | 说明                                     |
+| ------------------------- | ------ | ---------------------------------------- |
+| `name`                    | string | 用例标题                                 |
+| `version`                 | int    | 用例版本                                 |
+| `summary`                 | string | 用例摘要                                 |
+| `preconditions`           | string | 前置条件                                 |
+| `execution_type`          | int    | 执行类型（1: 手动, 2: 自动）             |
+| `importance`              | int    | 优先级（1: 高, 2: 中, 3: 低）            |
+| `estimated_exec_duration` | int    | 预计执行时间（分钟）                     |
+| `status`                  | int    | 状态（1: 草稿, 2: 待评审, ..., 7: 终稿） |
+| `steps`                   | array  | 测试步骤列表                             |
+| `product`                 | string | 产品名称                                 |
+| `suite`                   | string | 测试集名称                               |
 
 **执行结果字段：**
 
@@ -460,67 +461,13 @@ uv build
 uv publish
 ```
 
-![upload_pypi](https://raw.githubusercontent.com/zhuifengshen/xmind2cases/master/webtool/static/guide/pypi_upload.png)
-
----
-
-## 📝 更新日志
-
-### v1.6.1 (最新)
-
-- ✨ 支持通过标签设置用例类型（自动/手动）
-- ✨ 支持导出文件中文显示
-- ✨ 增加命令运行指引
-- 🐛 修复服务器远程部署无法访问问题
-- 🔧 取消测试用例关键字默认设置
-
-### v1.3.0
-
-- ✨ XMind 中支持标识测试用例执行结果
-- ✨ TestCase、TestSuite 中添加用例执行结果统计数据
-- 📝 完善用户使用指南
-
-### v1.2.0
-
-- ✨ 添加 Web 工具进行用例转换
-- 📝 添加用户使用指南
-
-### v1.1.0
-
-- ✨ XMind 用例文件转换为禅道用例文件
-- ✨ 添加一键上传 PyPI 功能
-
-### v1.0.0
-
-- 🎉 XMind 用例模板定义和解析
-- 🎉 XMind 用例转换为 TestLink 用例文件
-
-> **注意：** XMind2Cases 针对 XMind 经典系列版本，暂不支持 XMind Zen 版本！
-
----
-
-## 🙏 致谢
-
-**XMind2Cases** 的诞生受益于以下开源项目：
-
-- **[XMind](https://github.com/zhuifengshen/xmind)** - XMind 思维导图创建、解析、更新的一站式解决方案
-- **[xmind2testlink](https://github.com/tobyqin/xmind2testlink)** - 践行了 XMind 通用测试用例模板设计思路
-- **[TestLink](http://www.testlink.org/)** - 提供了完整的测试用例管理流程和文档
-- **[禅道开源版](https://www.zentao.net/)** - 提供了完整的项目管理流程和文档
-
-得益于开源，也将坚持开源。欢迎大家的 [使用](webtool/static/guide/index.md) 和 [意见反馈](https://github.com/koco-co/xmind2cases/issues/new)！
-
-如果这个项目对你有帮助，欢迎 ⭐️ [Star](https://github.com/koco-co/xmind2cases) 支持！
-
-![QA之禅](http://upload-images.jianshu.io/upload_images/139581-27c6030ba720846f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
 ---
 
 ## 📄 许可证
 
 MIT License
 
-Copyright (c) 2019 Poco https://github.com/koco-co
+Copyright (c) 2026 Poco https://github.com/koco-co
 
 ---
 
