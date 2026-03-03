@@ -41,7 +41,7 @@ USING_DOC = """
                                                       testcase conversion
                                                       tool locally:
                                                       127.0.0.1:5001
-     xmind2testcase webtool 8000                   => launch the web
+     xmind2cases webtool 8000                   => launch the web
                                                       testcase conversion
                                                       tool locally:
                                                       127.0.0.1:8000

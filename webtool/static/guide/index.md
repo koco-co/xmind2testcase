@@ -65,7 +65,7 @@ xmind2testlink XMind测试用例模板.xmind -xml  ==> XMind测试用例模板.x
 #### 1、将XMind用例文件解析为禅道导入文件
 
 ```
-xmind2testcase XMind测试用例模板.xmind -csv  ==> XMind测试用例模板.csv
+xmind2cases XMind测试用例模板.xmind -csv  ==> XMind测试用例模板.csv
 ```
 
 #### 2、禅道导入过程跟TestLink类似，结果示例
@@ -96,10 +96,10 @@ xmind2testcase XMind测试用例模板.xmind -csv  ==> XMind测试用例模板.c
 ![webtool_cli](webtool_cli.png)
 ```
 # 默认使用5001端口好
-xmind2testcase webtool        => launch the web testcase convertion tool locally -> 127.0.0.1:5001
+xmind2cases webtool        => launch the web testcase convertion tool locally -> 127.0.0.1:5001
 
 # 支持自定义端口号
-xmind2testcase webtool 8000   => launch the web testcase convertion tool locally -> 127.0.0.1:8000
+xmind2cases webtool 8000   => launch the web testcase convertion tool locally -> 127.0.0.1:8000
 ```
 
 #### 2、在浏览器访问Web工具
@@ -116,5 +116,5 @@ xmind2testcase webtool 8000   => launch the web testcase convertion tool locally
 
 ### 五、相关内容
 - [XMind测试用例模板.xmind下载](XMind测试用例模板.xmind)
-- [XMind2TestCase:一个高效测试用例设计的解决方案！](https://github.com/zhuifengshen/xmind2testcase)
+- [XMind2TestCase:一个高效测试用例设计的解决方案！](https://github.com/zhuifengshen/xmind2cases)
 - [XMind:XMind思维导图创建、解析、更新的一站式解决方案！](https://github.com/zhuifengshen/xmind)

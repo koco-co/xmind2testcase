@@ -91,7 +91,7 @@ def init() -> None:
     if not exists(DATABASE):
         init_db()
     app.logger.info(
-        "Congratulations! the xmind2testcase webtool database "
+        "Congratulations! the xmind2cases webtool database "
         "has initialized successfully!"
     )
 
