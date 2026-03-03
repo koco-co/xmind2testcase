@@ -41,6 +41,74 @@ print_info() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO: $1" >> "$LOG_FILE"
 }
 
+# 检测操作系统
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)
+            OS="Linux"
+            ;;
+        Darwin*)
+            OS="macOS"
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            OS="Windows"
+            ;;
+        *)
+            OS="Unknown"
+            ;;
+    esac
+}
+
+# 检查 Python 版本
+check_python_version() {
+    print_step "检查 Python 版本..."
+
+    if ! command -v python3 &> /dev/null; then
+        print_error "未找到 Python 3"
+        print_info "请安装 Python 3.12.12 或更高版本"
+        exit 1
+    fi
+
+    local python_version=$(python3 --version 2>&1 | awk '{print $2}')
+    local min_version="3.12.12"
+
+    # 比较版本号
+    if ! printf '%s\n' "$min_version" "$python_version" | sort -V -C; then
+        print_error "Python 版本过低: $python_version (需要 >= $min_version)"
+        exit 1
+    fi
+
+    print_success "Python 版本检查通过: $python_version"
+}
+
+# 检查/安装 uv
+check_uv() {
+    print_step "检查 uv 包管理器..."
+
+    if command -v uv &> /dev/null; then
+        local uv_version=$(uv --version 2>&1 | head -1)
+        print_success "uv 已安装: $uv_version"
+    else
+        print_warning "uv 未安装，正在安装..."
+        if curl -LsSf https://astral.sh/uv/install.sh | sh; then
+            export PATH="$HOME/.local/bin:$PATH"
+            print_success "uv 安装完成"
+        else
+            print_error "uv 安装失败"
+            print_info "请手动安装: https://github.com/astral-sh/uv"
+            exit 1
+        fi
+    fi
+}
+
+# 检查前置条件
+check_prerequisites() {
+    detect_os
+    print_info "操作系统: $OS"
+    check_python_version
+    check_uv
+}
+
 # 参数解析
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
