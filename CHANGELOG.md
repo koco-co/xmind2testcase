@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-03-04
+
+### Added
+
+- Add MIT LICENSE file to the repository
+
+### Fixed
+
+- Fix README navigation links by adding HTML anchor IDs to all major sections
+- Fix README badges by removing invalid ones (GitHub Release, CI Status, Downloads)
+- Update README example code to use existing test files
+- Remove absolute language ("currently the only tool") for more neutral description
+
+### Changed
+
+- Optimize README structure to highlight core feature: dual-format XMind parsing
+- Add acknowledgments section to credit xmind2testcase and xmindparser projects
+- Improve README badges to only show working ones (PyPI, Python, License, Last Commit)
+
+### Documentation
+
+- Update README to emphasize XMind 8 (XML) and XMind 2026 (JSON) dual-format support
+- Add proper acknowledgments to open source projects this project is based on
+
 ## [1.7.0] - 2026-03-04
 
 ### Removed
