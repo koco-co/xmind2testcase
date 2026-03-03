@@ -125,3 +125,41 @@ def test_normalize_default_fields():
     assert topic['link'] is None
     assert 'id' in topic
     assert topic['id'] is None
+
+def test_normalize_deeply_nested_structure():
+    """测试深层嵌套结构的处理"""
+    input_data = [
+        {
+            'title': 'Sheet 1',
+            'topic': {
+                'title': 'Root',
+                'topics': [
+                    {
+                        'title': 'Suite 1',
+                        'topics': [
+                            {
+                                'title': 'Sub-suite 1',
+                                'topics': [
+                                    {
+                                        'title': 'Test Case 1',
+                                        'makers': ['priority-2'],
+                                        'labels': ['手动']
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+
+    result = normalize_xmind_data(input_data)
+
+    # 验证深层嵌套的节点也被正确处理
+    test_case = result[0]['topic']['topics'][0]['topics'][0]['topics'][0]
+
+    assert test_case['markers'] == ['priority-2']
+    assert test_case['label'] == '手动'
+    assert test_case['note'] is None
+    assert test_case['comment'] is None
