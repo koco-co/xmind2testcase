@@ -163,3 +163,40 @@ def test_normalize_deeply_nested_structure():
     assert test_case['label'] == '手动'
     assert test_case['note'] is None
     assert test_case['comment'] is None
+
+def test_normalize_preserves_original_data():
+    """测试标准化不修改原始数据"""
+    import copy
+
+    input_data = [
+        {
+            'title': 'Sheet 1',
+            'topic': {
+                'title': 'Root',
+                'topics': [
+                    {
+                        'title': 'Test Case 1',
+                        'makers': ['priority-1']
+                    }
+                ]
+            }
+        }
+    ]
+
+    # 创建原始数据的深拷贝用于对比
+    original_data = copy.deepcopy(input_data)
+
+    # 执行标准化
+    result = normalize_xmind_data(input_data)
+
+    # 验证原始数据未被修改
+    assert input_data == original_data
+
+    # 验证返回的是新对象
+    assert input_data is not result
+
+    # 验证结果包含 markers
+    assert result[0]['topic']['topics'][0]['markers'] == ['priority-1']
+
+    # 验证原始数据没有 markers
+    assert 'markers' not in input_data[0]['topic']['topics'][0]
