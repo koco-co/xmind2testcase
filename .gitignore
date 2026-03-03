@@ -36,6 +36,7 @@ logs/
 # Web
 *data.db3
 uploads/
+data/
 
 # Docs (except plans)
 docs/*.xmind
