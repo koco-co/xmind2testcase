@@ -102,7 +102,6 @@ def _handle_xmind_conversion() -> None:
 def _handle_webtool() -> None:
     """Handle web tool launch with optional port number."""
     import uvicorn
-    from api.main import app
 
     if len(sys.argv) == 3:
         try:
@@ -114,7 +113,7 @@ def _handle_webtool() -> None:
 
     click.echo(f"Starting FastAPI server on port {port}...")
     click.echo(f"API docs available at: http://localhost:{port}/docs")
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("api.main:app", host="0.0.0.0", port=port, reload=True)
 
 
 if __name__ == "__main__":
