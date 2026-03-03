@@ -33,75 +33,69 @@
     </script>
 </head>
 <body class="bg-slate-50 font-sans text-slate-600">
-<div class="header">
-    <h1>{{ name }} - Preview</h1>
-    <h2>TestSuites: {{ suite_count }} / TestCases: {{ suite | length }}
-        / <a href="{{ url_for("download_zentao_file",filename= name) }}">Get Zentao CSV</a>
-        / <a href="{{ url_for("download_testlink_file",filename= name) }}">Get TestLink XML</a>
-        / <a href="{{ url_for("index") }}">Go Back</a></h2>
-</div>
-<table class="pure-table tests-table">
-    <thead>
-    <tr>
-        <th width="5%">#</th>
-        <th width="10%">Suite</th>
-        <th>Title</th>
-        <th width="200px">Attributes</th>
-        <th width="23%">Steps</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for test in suite %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ test.suite }}</td>
-            <td {% if test.name|length>100 %}class="long-name" {% endif %}>{{ test.name }}
-                {% if test.name|length>100 %}
-                    <span class="long-name-info">Warn: test name might be too long: {{ test.name|length }}!</span>
-                {% endif %}
-            </td>
-            <td>
-                <div class="tag-success tooltip">
-                    Priority {{ test.importance }}
-                    <span class="tooltiptext">Priority {{ test.importance }} </span>
+    <!-- 顶部操作栏 -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('index') }}" class="text-slate-600 hover:text-slate-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-lg font-semibold text-slate-900">{{ name }}</h1>
+                        <p class="text-sm text-slate-500">预览</p>
+                    </div>
                 </div>
-                {% if test.preconditions %}
-                    <div class="pure-button tag-info tooltip">PreCond.
-                        <p class="tooltiptext">
-                            <b>Preconditions:</b> <br>
-                            {{ test.preconditions | replace('\n','<br>') |safe }}
-                        </p></div>
-                {% endif %}
-                {% if test.summary %}
-                    <div class="pure-button tag-warn tooltip">Summary
-                        <p class="tooltiptext">
-                            <b>Summary:</b> <br>
-                            {{ test.summary | replace('\n','<br>') |safe }}
-                        </p></div>
-                {% endif %}
-            <td>
-                {% if test.steps %}
-                    <ol>
-                        {% for step in test.steps %}
-                            <li>{{ step.actions }}
-                                {% if step.expectedresults %}
-                                    <ul>
-                                        <li>{{ step.expectedresults }}</li>
-                                    </ul>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ol>
-                {% endif %}
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<div class="footer">
-    <a href="{{ url_for('static', filename='guide/index.html') }}" target="_blank">User Guide</a> |
-    <a href="https://github.com/zhuifengshen/xmind2testcase/issues/new" target="_blank">Report Issue</a> |
-    Powered by <a href="https://github.com/zhuifengshen/xmind2testcase" target="_blank">XMind2TestCase</a>
-</div>
+
+                <div class="flex items-center space-x-3">
+                    <!-- 统计信息 -->
+                    <div class="hidden sm:flex items-center space-x-4 mr-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-indigo-600">{{ suite_count }}</div>
+                            <div class="text-xs text-slate-500">TestSuites</div>
+                        </div>
+                        <div class="h-8 w-px bg-slate-200"></div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-indigo-600">{{ suite | length }}</div>
+                            <div class="text-xs text-slate-500">TestCases</div>
+                        </div>
+                    </div>
+
+                    <!-- 导出按钮 -->
+                    <a href="{{ url_for('download_zentao_file',filename= name) }}" class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        导出 CSV
+                    </a>
+                    <a href="{{ url_for('download_testlink_file',filename= name) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        导出 XML
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 测试用例表格将在下一个任务添加 -->
+        <div class="text-center text-slate-400 py-12">
+            测试用例表格将在下一步添加
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-sm text-slate-400 pb-8">
+        <a href="{{ url_for('static', filename='guide/index.html') }}" target="_blank" class="hover:text-slate-600">使用指南</a>
+        <span class="mx-2">|</span>
+        <a href="https://github.com/zhuifengshen/xmind2testcase/issues/new" target="_blank" class="hover:text-slate-600">反馈问题</a>
+        <span class="mx-2">|</span>
+        Powered by <a href="https://github.com/zhuifengshen/xmind2testcase" target="_blank" class="hover:text-slate-600">XMind2TestCase</a>
+    </footer>
 </body>
 </html>
