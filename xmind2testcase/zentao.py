@@ -71,7 +71,7 @@ def gen_a_testcase_row(testcase_dict: Dict[str, Any]) -> List[str]:
     """
     case_module = gen_case_module(testcase_dict["suite"])
     case_title = testcase_dict["name"]
-    case_precondition = testcase_dict["preconditions"]
+    case_precondition = testcase_dict["preconditions"].replace("\n", "<br>")
     case_step, case_expected_result = gen_case_step_and_expected_result(
         testcase_dict.get("steps", [])
     )
