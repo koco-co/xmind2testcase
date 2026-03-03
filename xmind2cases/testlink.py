@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Convert XMind file to TestLink testcase XML file."""
+
 import logging
 import os
 from io import BytesIO
@@ -9,16 +10,13 @@ from xml.dom import minidom
 from xml.etree.ElementTree import Comment, Element, ElementTree, SubElement
 from xml.sax.saxutils import escape
 
-from xmind2testcase import const
-from xmind2testcase.metadata import TestCase, TestSuite
-from xmind2testcase.parser import config
-from xmind2testcase.utils import get_absolute_path, get_xmind_testsuites
+from xmind2cases import const
+from xmind2cases.metadata import TestCase, TestSuite
+from xmind2cases.parser import config
+from xmind2cases.utils import get_absolute_path, get_xmind_testsuites
 
 
-def xmind_to_testlink_xml_file(
-    xmind_file: str,
-    is_all_sheet: bool = True
-) -> str:
+def xmind_to_testlink_xml_file(xmind_file: str, is_all_sheet: bool = True) -> str:
     """Convert an XMind sheet to a TestLink XML file.
 
     Args:
@@ -29,26 +27,29 @@ def xmind_to_testlink_xml_file(
         Path to the created TestLink XML file.
     """
     xmind_file = get_absolute_path(xmind_file)
-    logging.info('Start converting XMind file(%s) to testlink file...',
-                 xmind_file)
+    logging.info("Start converting XMind file(%s) to testlink file...", xmind_file)
     testsuites = get_xmind_testsuites(xmind_file)
     if not is_all_sheet and testsuites:
         testsuites = [testsuites[0]]
 
     xml_content = testsuites_to_xml_content(testsuites)
-    testlink_xml_file = xmind_file[:-6] + '.xml'
+    testlink_xml_file = xmind_file[:-6] + ".xml"
 
     if os.path.exists(testlink_xml_file):
-        logging.info('the testlink xml file already exists, return it '
-                     'directly: %s', testlink_xml_file)
+        logging.info(
+            "the testlink xml file already exists, return it directly: %s",
+            testlink_xml_file,
+        )
         return testlink_xml_file
 
-    with open(testlink_xml_file, 'w', encoding='utf-8') as f:
-        pretty_content = minidom.parseString(xml_content).toprettyxml(
-            indent='\t')
+    with open(testlink_xml_file, "w", encoding="utf-8") as f:
+        pretty_content = minidom.parseString(xml_content).toprettyxml(indent="\t")
         f.write(pretty_content)
-        logging.info('convert XMind file(%s) to a testlink xml file(%s) '
-                     'successfully!', xmind_file, testlink_xml_file)
+        logging.info(
+            "convert XMind file(%s) to a testlink xml file(%s) successfully!",
+            xmind_file,
+            testlink_xml_file,
+        )
 
     return testlink_xml_file
 
@@ -72,23 +73,18 @@ def testsuites_to_xml_content(testsuites: List[TestSuite]) -> bytes:
         for sub_suite in testsuite.sub_suites or []:
             if is_should_skip(sub_suite.name):
                 continue
-            sub_suite_element = SubElement(suite_element,
-                                           const.TAG_TESTSUITE)
+            sub_suite_element = SubElement(suite_element, const.TAG_TESTSUITE)
             sub_suite_element.set(const.ATTR_NMAE, sub_suite.name)
-            gen_text_element(sub_suite_element, const.TAG_DETAILS,
-                             sub_suite.details)
+            gen_text_element(sub_suite_element, const.TAG_DETAILS, sub_suite.details)
             gen_testcase_element(sub_suite_element, sub_suite)
 
     testlink = ElementTree(root_element)
     content_stream = BytesIO()
-    testlink.write(content_stream, encoding='utf-8', xml_declaration=True)
+    testlink.write(content_stream, encoding="utf-8", xml_declaration=True)
     return content_stream.getvalue()
 
 
-def gen_testcase_element(
-    suite_element: Element,
-    suite: TestSuite
-) -> None:
+def gen_testcase_element(suite_element: Element, suite: TestSuite) -> None:
     """Generate testcase elements for a test suite.
 
     Args:
@@ -102,34 +98,36 @@ def gen_testcase_element(
         testcase_element = SubElement(suite_element, const.TAG_TESTCASE)
         testcase_element.set(const.ATTR_NMAE, testcase.name)
 
-        gen_text_element(testcase_element, const.TAG_VERSION,
-                         str(testcase.version))
-        gen_text_element(testcase_element, const.TAG_SUMMARY,
-                         testcase.summary)
-        gen_text_element(testcase_element, const.TAG_PRECONDITIONS,
-                         testcase.preconditions)
-        gen_text_element(testcase_element, const.TAG_EXECUTION_TYPE,
-                         _convert_execution_type(testcase.execution_type))
-        gen_text_element(testcase_element, const.TAG_IMPORTANCE,
-                         _convert_importance(testcase.importance))
+        gen_text_element(testcase_element, const.TAG_VERSION, str(testcase.version))
+        gen_text_element(testcase_element, const.TAG_SUMMARY, testcase.summary)
+        gen_text_element(
+            testcase_element, const.TAG_PRECONDITIONS, testcase.preconditions
+        )
+        gen_text_element(
+            testcase_element,
+            const.TAG_EXECUTION_TYPE,
+            _convert_execution_type(testcase.execution_type),
+        )
+        gen_text_element(
+            testcase_element,
+            const.TAG_IMPORTANCE,
+            _convert_importance(testcase.importance),
+        )
 
         estimated_exec_duration_element = SubElement(
-            testcase_element, const.TAG_ESTIMATED_EXEC_DURATION)
-        estimated_exec_duration_element.text = str(
-            testcase.estimated_exec_duration)
+            testcase_element, const.TAG_ESTIMATED_EXEC_DURATION
+        )
+        estimated_exec_duration_element.text = str(testcase.estimated_exec_duration)
 
         status = SubElement(testcase_element, const.TAG_STATUS)
-        status.text = (str(testcase.status)
-                       if testcase.status in (1, 2, 3, 4, 5, 6, 7)
-                       else '7')
+        status.text = (
+            str(testcase.status) if testcase.status in (1, 2, 3, 4, 5, 6, 7) else "7"
+        )
 
         gen_steps_element(testcase_element, testcase)
 
 
-def gen_steps_element(
-    testcase_element: Element,
-    testcase: TestCase
-) -> None:
+def gen_steps_element(testcase_element: Element, testcase: TestCase) -> None:
     """Generate steps elements for a test case.
 
     Args:
@@ -144,19 +142,20 @@ def gen_steps_element(
                 continue
 
             step_element = SubElement(steps_element, const.TAG_STEP)
-            gen_text_element(step_element, const.TAG_STEP_NUMBER,
-                             str(step.step_number))
+            gen_text_element(step_element, const.TAG_STEP_NUMBER, str(step.step_number))
             gen_text_element(step_element, const.TAG_ACTIONS, step.actions)
-            gen_text_element(step_element, const.TAG_EXPECTEDRESULTS,
-                             step.expectedresults)
-            gen_text_element(step_element, const.TAG_EXECUTION_TYPE,
-                             _convert_execution_type(step.execution_type))
+            gen_text_element(
+                step_element, const.TAG_EXPECTEDRESULTS, step.expectedresults
+            )
+            gen_text_element(
+                step_element,
+                const.TAG_EXECUTION_TYPE,
+                _convert_execution_type(step.execution_type),
+            )
 
 
 def gen_text_element(
-    parent_element: Element,
-    tag_name: str,
-    content: Optional[str]
+    parent_element: Element, tag_name: str, content: Optional[str]
 ) -> None:
     """Generate an element's text content with CDATA.
 
@@ -178,15 +177,15 @@ def element_set_text(element: Element, content: str) -> None:
         content: Text content to set.
     """
     # Retain HTML tags in content
-    content = escape(content, entities={'\r\n': '<br />'})
+    content = escape(content, entities={"\r\n": "<br />"})
     # Replace new line for *nix system
-    content = content.replace('\n', '<br />')
+    content = content.replace("\n", "<br />")
     # Add the line break in source to make it readable
-    content = content.replace('<br />', '<br />\n')
+    content = content.replace("<br />", "<br />\n")
 
     # Add CDATA for an element
-    escaped_content = content.replace(']]>', ']]]]><![CDATA[>')
-    element.append(Comment(f' --><![CDATA[{escaped_content}]]> <!-- '))
+    escaped_content = content.replace("]]>", "]]]]><![CDATA[>")
+    element.append(Comment(f" --><![CDATA[{escaped_content}]]> <!-- "))
 
 
 def is_should_parse(content: Optional[str]) -> bool:
@@ -201,9 +200,11 @@ def is_should_parse(content: Optional[str]) -> bool:
     Returns:
         True if content should be parsed, False otherwise.
     """
-    return (isinstance(content, str) and
-            content.strip() != '' and
-            content[0] not in config['ignore_char'])
+    return (
+        isinstance(content, str)
+        and content.strip() != ""
+        and content[0] not in config["ignore_char"]
+    )
 
 
 def is_should_skip(content: Optional[str]) -> bool:
@@ -219,10 +220,12 @@ def is_should_skip(content: Optional[str]) -> bool:
     Returns:
         True if content should be skipped, False otherwise.
     """
-    return (content is None or
-            not isinstance(content, str) or
-            content.strip() == '' or
-            content[0] in config['ignore_char'])
+    return (
+        content is None
+        or not isinstance(content, str)
+        or content.strip() == ""
+        or content[0] in config["ignore_char"]
+    )
 
 
 def _convert_execution_type(value: Union[int, str]) -> str:
@@ -234,17 +237,26 @@ def _convert_execution_type(value: Union[int, str]) -> str:
     Returns:
         String representation: '1' for manual, '2' for automated.
     """
-    manual_values = (1, '手动', '手工', 'manual', 'Manual')
-    automated_values = (2, '自动', '自动化', '自动的', 'Automate',
-                        'Automated', 'Automation', 'automate',
-                        'automated', 'automation')
+    manual_values = (1, "手动", "手工", "manual", "Manual")
+    automated_values = (
+        2,
+        "自动",
+        "自动化",
+        "自动的",
+        "Automate",
+        "Automated",
+        "Automation",
+        "automate",
+        "automated",
+        "automation",
+    )
 
     if value in manual_values:
-        return '1'
+        return "1"
     elif value in automated_values:
-        return '2'
+        return "2"
     else:
-        return '1'
+        return "1"
 
 
 def _convert_importance(value: int) -> str:
@@ -256,5 +268,5 @@ def _convert_importance(value: int) -> str:
     Returns:
         String representation: '3' for high, '2' for middle, '1' for low.
     """
-    mapping = {1: '3', 2: '2', 3: '1'}
-    return mapping.get(value, '2')
+    mapping = {1: "3", 2: "2", 3: "1"}
+    return mapping.get(value, "2")

@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Command-line interface for xmind2testcase."""
+"""Command-line interface for xmind2cases."""
 
 import logging
 import sys
 
 import click
 
-from xmind2testcase.testlink import xmind_to_testlink_xml_file
-from xmind2testcase.utils import (
+from xmind2cases.testlink import xmind_to_testlink_xml_file
+from xmind2cases.utils import (
     get_absolute_path,
     xmind_testcase_to_json_file,
 )
-from xmind2testcase.zentao import xmind_to_zentao_csv_file
+from xmind2cases.zentao import xmind_to_zentao_csv_file
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,22 +22,22 @@ logging.basicConfig(
 )
 
 USING_DOC = """
-    Xmind2Testcase is a tool to parse xmind file into testcase file, which
+    Xmind2Cases is a tool to parse xmind file into testcase file, which
     will help you generate a testlink recognized xml file or a zentao
     recognized csv file, then you can import it into testlink or zentao.
-    
+
     Usage:
-     xmind2testcase [path_to_xmind_file] [-csv] [-xml] [-json]
-     xmind2testcase [webtool] [port_num]
-    
+     xmind2cases [path_to_xmind_file] [-csv] [-xml] [-json]
+     xmind2cases [webtool] [port_num]
+
     Example:
-     xmind2testcase /path/to/testcase.xmind        => output testcase.csv,
+     xmind2cases /path/to/testcase.xmind        => output testcase.csv,
                                                       testcase.xml,
                                                       testcase.json
-     xmind2testcase /path/to/testcase.xmind -csv   => output testcase.csv
-     xmind2testcase /path/to/testcase.xmind -xml   => output testcase.xml
-     xmind2testcase /path/to/testcase.xmind -json  => output testcase.json
-     xmind2testcase webtool                        => launch the web
+     xmind2cases /path/to/testcase.xmind -csv   => output testcase.csv
+     xmind2cases /path/to/testcase.xmind -xml   => output testcase.xml
+     xmind2cases /path/to/testcase.xmind -json  => output testcase.json
+     xmind2cases webtool                        => launch the web
                                                       testcase conversion
                                                       tool locally:
                                                       127.0.0.1:5001

@@ -62,7 +62,7 @@ Repository = "https://github.com/koco-co/xmind2cases"
 Issues = "https://github.com/koco-co/xmind2cases/issues"
 
 [project.scripts]
-xmind2cases = "xmind2testcase.cli:cli_main"
+xmind2cases = "xmind2cases.cli:cli_main"
 
 [dependency-groups]
 dev = [
@@ -79,10 +79,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-packages = ["xmind2testcase", "webtool"]
+packages = ["xmind2cases", "webtool"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["xmind2testcase", "webtool"]
+packages = ["xmind2cases", "webtool"]
 
 [tool.hatch.build.targets.wheel.shared-data]
 "webtool/static" = "webtool/static"

@@ -331,9 +331,9 @@ xmind2testcase webtool 8000
 ```python
 import json
 import xmind
-from xmind2testcase.zentao import xmind_to_zentao_csv_file
-from xmind2testcase.testlink import xmind_to_testlink_xml_file
-from xmind2testcase.utils import (
+from xmind2cases.zentao import xmind_to_zentao_csv_file
+from xmind2cases.testlink import xmind_to_testlink_xml_file
+from xmind2cases.utils import (
     xmind_testcase_to_json_file,
     xmind_testsuite_to_json_file,
     get_xmind_testcase_list,
@@ -390,7 +390,7 @@ if __name__ == '__main__':
 ![xmind_testcase_demo](https://raw.githubusercontent.com/zhuifengshen/xmind2testcase/master/webtool/static/guide/xmind_testcase_demo.png)
 
 ```python
-from xmind2testcase.utils import get_xmind_testcase_list
+from xmind2cases.utils import get_xmind_testcase_list
 
 xmind_file = 'docs/xmind_testcase_demo.xmind'
 testcases = get_xmind_testcase_list(xmind_file)
@@ -452,7 +452,7 @@ testcases = get_xmind_testcase_list(xmind_file)
 #### TestSuite JSON 格式
 
 ```python
-from xmind2testcase.utils import get_xmind_testsuite_list
+from xmind2cases.utils import get_xmind_testsuite_list
 
 xmind_file = 'docs/xmind_testcase_demo.xmind'
 testsuites = get_xmind_testsuite_list(xmind_file)

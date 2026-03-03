@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Metadata classes for test suites, test cases, and test steps."""
+
 from typing import Dict, List, Optional, Any
 
 
@@ -18,11 +19,11 @@ class TestSuite:
 
     def __init__(
         self,
-        name: str = '',
-        details: str = '',
-        testcase_list: Optional[List['TestCase']] = None,
-        sub_suites: Optional[List['TestSuite']] = None,
-        statistics: Optional[Dict[str, int]] = None
+        name: str = "",
+        details: str = "",
+        testcase_list: Optional[List["TestCase"]] = None,
+        sub_suites: Optional[List["TestSuite"]] = None,
+        statistics: Optional[Dict[str, int]] = None,
     ) -> None:
         """Initialize a TestSuite instance.
 
@@ -48,22 +49,22 @@ class TestSuite:
             Dictionary representation of the test suite.
         """
         data: Dict[str, Any] = {
-            'name': self.name,
-            'details': self.details,
-            'testcase_list': [],
-            'sub_suites': []
+            "name": self.name,
+            "details": self.details,
+            "testcase_list": [],
+            "sub_suites": [],
         }
 
         if self.sub_suites:
             for suite in self.sub_suites:
-                data['sub_suites'].append(suite.to_dict())
+                data["sub_suites"].append(suite.to_dict())
 
         if self.testcase_list:
             for case in self.testcase_list:
-                data['testcase_list'].append(case.to_dict())
+                data["testcase_list"].append(case.to_dict())
 
         if self.statistics:
-            data['statistics'] = self.statistics
+            data["statistics"] = self.statistics
 
         return data
 
@@ -88,16 +89,16 @@ class TestCase:
 
     def __init__(
         self,
-        name: str = '',
+        name: str = "",
         version: int = 1,
-        summary: str = '',
-        preconditions: str = '',
+        summary: str = "",
+        preconditions: str = "",
         execution_type: int = 1,
         importance: int = 2,
         estimated_exec_duration: int = 3,
         status: int = 7,
         result: int = 0,
-        steps: Optional[List['TestStep']] = None
+        steps: Optional[List["TestStep"]] = None,
     ) -> None:
         """Initialize a TestCase instance.
 
@@ -133,21 +134,21 @@ class TestCase:
             Dictionary representation of the test case.
         """
         data: Dict[str, Any] = {
-            'name': self.name,
-            'version': self.version,
-            'summary': self.summary,
-            'preconditions': self.preconditions,
-            'execution_type': self.execution_type,
-            'importance': self.importance,
-            'estimated_exec_duration': self.estimated_exec_duration,
-            'status': self.status,
-            'result': self.result,
-            'steps': []
+            "name": self.name,
+            "version": self.version,
+            "summary": self.summary,
+            "preconditions": self.preconditions,
+            "execution_type": self.execution_type,
+            "importance": self.importance,
+            "estimated_exec_duration": self.estimated_exec_duration,
+            "status": self.status,
+            "result": self.result,
+            "steps": [],
         }
 
         if self.steps:
             for step in self.steps:
-                data['steps'].append(step.to_dict())
+                data["steps"].append(step.to_dict())
 
         return data
 
@@ -167,10 +168,10 @@ class TestStep:
     def __init__(
         self,
         step_number: int = 1,
-        actions: str = '',
-        expectedresults: str = '',
+        actions: str = "",
+        expectedresults: str = "",
         execution_type: int = 1,
-        result: int = 0
+        result: int = 0,
     ) -> None:
         """Initialize a TestStep instance.
 
@@ -195,10 +196,9 @@ class TestStep:
             Dictionary representation of the test step.
         """
         return {
-            'step_number': self.step_number,
-            'actions': self.actions,
-            'expectedresults': self.expectedresults,
-            'execution_type': self.execution_type,
-            'result': self.result
+            "step_number": self.step_number,
+            "actions": self.actions,
+            "expectedresults": self.expectedresults,
+            "execution_type": self.execution_type,
+            "result": self.result,
         }
-

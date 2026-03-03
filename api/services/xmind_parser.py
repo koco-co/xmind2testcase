@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Dict, Any
 
-from xmind2testcase.utils import get_xmind_testcase_list, get_xmind_testsuites
+from xmind2cases.utils import get_xmind_testcase_list, get_xmind_testsuites
 
 from api.core.exceptions import XMindParserError
 

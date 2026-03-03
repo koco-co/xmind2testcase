@@ -1,23 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Parser for converting XMind content to test suite structures."""
+
 import logging
 from typing import Any, Dict, Generator, List, Optional
 
-from xmind2testcase.metadata import TestCase, TestStep, TestSuite
+from xmind2cases.metadata import TestCase, TestStep, TestSuite
 
 config: Dict[str, Any] = {
-    'sep': ' ',
-    'valid_sep': '&>+/-',
-    'precondition_sep': '\n----\n',
-    'summary_sep': '\n----\n',
-    'ignore_char': '#!！'
+    "sep": " ",
+    "valid_sep": "&>+/-",
+    "precondition_sep": "\n----\n",
+    "summary_sep": "\n----\n",
+    "ignore_char": "#!！",
 }
 
 
-def xmind_to_testsuites(
-    xmind_content_dict: List[Dict[str, Any]]
-) -> List[TestSuite]:
+def xmind_to_testsuites(xmind_content_dict: List[Dict[str, Any]]) -> List[TestSuite]:
     """Convert XMind file content to TestSuite list.
 
     Args:
@@ -29,27 +28,27 @@ def xmind_to_testsuites(
     suites = []
 
     for sheet in xmind_content_dict:
-        logging.debug('start to parse a sheet: %s', sheet['title'])
-        root_topic = sheet['topic']
-        sub_topics = root_topic.get('topics', [])
+        logging.debug("start to parse a sheet: %s", sheet["title"])
+        root_topic = sheet["topic"]
+        sub_topics = root_topic.get("topics", [])
 
         if sub_topics:
-            root_topic['topics'] = filter_empty_or_ignore_topic(sub_topics)
+            root_topic["topics"] = filter_empty_or_ignore_topic(sub_topics)
         else:
-            logging.warning('This is a blank sheet(%s), should have at least '
-                           '1 sub topic(test suite)', sheet['title'])
+            logging.warning(
+                "This is a blank sheet(%s), should have at least "
+                "1 sub topic(test suite)",
+                sheet["title"],
+            )
             continue
         suite = sheet_to_suite(root_topic)
-        logging.debug('sheet(%s) parsing complete: %s',
-                      sheet['title'], suite.to_dict())
+        logging.debug("sheet(%s) parsing complete: %s", sheet["title"], suite.to_dict())
         suites.append(suite)
 
     return suites
 
 
-def filter_empty_or_ignore_topic(
-    topics: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+def filter_empty_or_ignore_topic(topics: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Filter blank or topics starting with ignore characters.
 
     Args:
@@ -59,15 +58,18 @@ def filter_empty_or_ignore_topic(
         Filtered list of topics.
     """
     result = [
-        topic for topic in topics
-        if not (topic['title'] is None or
-                topic['title'].strip() == '' or
-                topic['title'][0] in config['ignore_char'])
+        topic
+        for topic in topics
+        if not (
+            topic["title"] is None
+            or topic["title"].strip() == ""
+            or topic["title"][0] in config["ignore_char"]
+        )
     ]
 
     for topic in result:
-        sub_topics = topic.get('topics', [])
-        topic['topics'] = filter_empty_or_ignore_topic(sub_topics)
+        sub_topics = topic.get("topics", [])
+        topic["topics"] = filter_empty_or_ignore_topic(sub_topics)
 
     return result
 
@@ -86,9 +88,11 @@ def filter_empty_or_ignore_element(values: List[Any]) -> List[str]:
     """
     result = []
     for value in values:
-        if (isinstance(value, str) and
-                value.strip() != '' and
-                value[0] not in config['ignore_char']):
+        if (
+            isinstance(value, str)
+            and value.strip() != ""
+            and value[0] not in config["ignore_char"]
+        ):
             result.append(value.strip())
     return result
 
@@ -103,22 +107,23 @@ def sheet_to_suite(root_topic: Dict[str, Any]) -> TestSuite:
         TestSuite instance created from the root topic.
     """
     suite = TestSuite()
-    root_title = root_topic['title']
+    root_title = root_topic["title"]
     separator = root_title[-1]
 
-    if separator in config['valid_sep']:
-        logging.debug('find a valid separator for connecting testcase title: '
-                      '%s', separator)
-        config['sep'] = separator
+    if separator in config["valid_sep"]:
+        logging.debug(
+            "find a valid separator for connecting testcase title: %s", separator
+        )
+        config["sep"] = separator
         root_title = root_title[:-1]
     else:
-        config['sep'] = ' '
+        config["sep"] = " "
 
     suite.name = root_title
-    suite.details = root_topic['note']
+    suite.details = root_topic["note"]
     suite.sub_suites = []
 
-    for suite_dict in root_topic['topics']:
+    for suite_dict in root_topic["topics"]:
         suite.sub_suites.append(parse_testsuite(suite_dict))
 
     return suite
@@ -134,23 +139,23 @@ def parse_testsuite(suite_dict: Dict[str, Any]) -> TestSuite:
         TestSuite instance parsed from the dictionary.
     """
     testsuite = TestSuite()
-    testsuite.name = suite_dict['title']
-    testsuite.details = suite_dict['note']
+    testsuite.name = suite_dict["title"]
+    testsuite.details = suite_dict["note"]
     testsuite.testcase_list = []
-    logging.debug('start to parse a testsuite: %s', testsuite.name)
+    logging.debug("start to parse a testsuite: %s", testsuite.name)
 
-    for cases_dict in suite_dict.get('topics', []):
+    for cases_dict in suite_dict.get("topics", []):
         for case in recurse_parse_testcase(cases_dict):
             testsuite.testcase_list.append(case)
 
-    logging.debug('testsuite(%s) parsing complete: %s',
-                  testsuite.name, testsuite.to_dict())
+    logging.debug(
+        "testsuite(%s) parsing complete: %s", testsuite.name, testsuite.to_dict()
+    )
     return testsuite
 
 
 def recurse_parse_testcase(
-    case_dict: Dict[str, Any],
-    parent: Optional[List[Dict[str, Any]]] = None
+    case_dict: Dict[str, Any], parent: Optional[List[Dict[str, Any]]] = None
 ) -> Generator[TestCase, None, None]:
     """Recursively parse test cases from a topic dictionary.
 
@@ -170,7 +175,7 @@ def recurse_parse_testcase(
 
         parent.append(case_dict)
 
-        for child_dict in case_dict.get('topics', []):
+        for child_dict in case_dict.get("topics", []):
             for case in recurse_parse_testcase(child_dict, parent):
                 yield case
 
@@ -193,7 +198,7 @@ def is_testcase_topic(case_dict: Dict[str, Any]) -> bool:
     if priority:
         return True
 
-    children = case_dict.get('topics', [])
+    children = case_dict.get("topics", [])
     if children:
         return False
 
@@ -201,8 +206,7 @@ def is_testcase_topic(case_dict: Dict[str, Any]) -> bool:
 
 
 def parse_a_testcase(
-    case_dict: Dict[str, Any],
-    parent: Optional[List[Dict[str, Any]]]
+    case_dict: Dict[str, Any], parent: Optional[List[Dict[str, Any]]]
 ) -> TestCase:
     """Parse a single test case from a dictionary.
 
@@ -219,20 +223,20 @@ def parse_a_testcase(
     testcase.name = gen_testcase_title(topics)
 
     preconditions = gen_testcase_preconditions(topics)
-    testcase.preconditions = preconditions if preconditions else '无'
+    testcase.preconditions = preconditions if preconditions else "无"
 
     summary = gen_testcase_summary(topics)
     testcase.summary = summary if summary else testcase.name
     testcase.execution_type = get_execution_type(topics)
     testcase.importance = get_priority(case_dict) or 2
 
-    step_dict_list = case_dict.get('topics', [])
+    step_dict_list = case_dict.get("topics", [])
     if step_dict_list:
         testcase.steps = parse_test_steps(step_dict_list)
 
     # The result of the testcase takes precedence over the result of
     # the teststep
-    testcase.result = get_test_result(case_dict['markers'])
+    testcase.result = get_test_result(case_dict["markers"])
 
     if testcase.result == 0 and testcase.steps:
         for step in testcase.steps:
@@ -245,7 +249,7 @@ def parse_a_testcase(
 
             testcase.result = step.result
 
-    logging.debug('finds a testcase: %s', testcase.to_dict())
+    logging.debug("finds a testcase: %s", testcase.to_dict())
     return testcase
 
 
@@ -258,14 +262,14 @@ def get_execution_type(topics: List[Dict[str, Any]]) -> int:
     Returns:
         Execution type: 1 for manual, 2 for automated.
     """
-    labels = [topic.get('label', '') for topic in topics]
+    labels = [topic.get("label", "") for topic in topics]
     labels = filter_empty_or_ignore_element(labels)
     exe_type = 1
     for item in labels[::-1]:
-        if item.lower() in ['自动', 'auto', 'automate', 'automation']:
+        if item.lower() in ["自动", "auto", "automate", "automation"]:
             exe_type = 2
             break
-        if item.lower() in ['手动', '手工', 'manual']:
+        if item.lower() in ["手动", "手工", "manual"]:
             exe_type = 1
             break
     return exe_type
@@ -280,17 +284,14 @@ def get_priority(case_dict: Dict[str, Any]) -> Optional[int]:
     Returns:
         Priority value (1-3) if found, None otherwise.
     """
-    if isinstance(case_dict['markers'], list):
-        for marker in case_dict['markers']:
-            if marker.startswith('priority'):
+    if isinstance(case_dict["markers"], list):
+        for marker in case_dict["markers"]:
+            if marker.startswith("priority"):
                 return int(marker[-1])
     return None
 
 
-def _extract_topic_field(
-    topics: List[Dict[str, Any]],
-    field: str
-) -> List[str]:
+def _extract_topic_field(topics: List[Dict[str, Any]], field: str) -> List[str]:
     """Extract a field from topics and filter empty/ignored values.
 
     Args:
@@ -300,7 +301,7 @@ def _extract_topic_field(
     Returns:
         List of non-empty field values.
     """
-    values = [topic.get(field, '') for topic in topics]
+    values = [topic.get(field, "") for topic in topics]
     return filter_empty_or_ignore_element(values)
 
 
@@ -313,13 +314,13 @@ def gen_testcase_title(topics: List[Dict[str, Any]]) -> str:
     Returns:
         Combined testcase title string.
     """
-    titles = _extract_topic_field(topics, 'title')
+    titles = _extract_topic_field(topics, "title")
 
     # When separator is not blank, add space around separator,
     # e.g. '/' will be changed to ' / '
-    separator = config['sep']
-    if separator != ' ':
-        separator = f' {separator} '
+    separator = config["sep"]
+    if separator != " ":
+        separator = f" {separator} "
 
     return separator.join(titles)
 
@@ -333,8 +334,8 @@ def gen_testcase_preconditions(topics: List[Dict[str, Any]]) -> str:
     Returns:
         Combined preconditions string.
     """
-    notes = _extract_topic_field(topics, 'note')
-    return config['precondition_sep'].join(notes)
+    notes = _extract_topic_field(topics, "note")
+    return config["precondition_sep"].join(notes)
 
 
 def gen_testcase_summary(topics: List[Dict[str, Any]]) -> str:
@@ -346,8 +347,8 @@ def gen_testcase_summary(topics: List[Dict[str, Any]]) -> str:
     Returns:
         Combined summary string.
     """
-    comments = _extract_topic_field(topics, 'comment')
-    return config['summary_sep'].join(comments)
+    comments = _extract_topic_field(topics, "comment")
+    return config["summary_sep"].join(comments)
 
 
 def parse_test_steps(step_dict_list: List[Dict[str, Any]]) -> List[TestStep]:
@@ -379,20 +380,20 @@ def parse_a_test_step(step_dict: Dict[str, Any]) -> TestStep:
         TestStep instance parsed from the dictionary.
     """
     test_step = TestStep()
-    test_step.actions = step_dict['title']
+    test_step.actions = step_dict["title"]
 
-    expected_topics = step_dict.get('topics', [])
+    expected_topics = step_dict.get("topics", [])
     if expected_topics:  # Have expected result
         expected_topic = expected_topics[0]
         # One test step action, one test expected result
-        test_step.expectedresults = expected_topic['title']
-        markers = expected_topic['markers']
+        test_step.expectedresults = expected_topic["title"]
+        markers = expected_topic["markers"]
         test_step.result = get_test_result(markers)
     else:  # Only have test step
-        markers = step_dict['markers']
+        markers = step_dict["markers"]
         test_step.result = get_test_result(markers)
 
-    logging.debug('finds a teststep: %s', test_step.to_dict())
+    logging.debug("finds a teststep: %s", test_step.to_dict())
     return test_step
 
 
@@ -413,13 +414,13 @@ def get_test_result(markers: Any) -> int:
         Test result value (0-4).
     """
     if isinstance(markers, list):
-        if 'symbol-right' in markers or 'c_simbol-right' in markers:
+        if "symbol-right" in markers or "c_simbol-right" in markers:
             return 1
-        elif 'symbol-wrong' in markers or 'c_simbol-wrong' in markers:
+        elif "symbol-wrong" in markers or "c_simbol-wrong" in markers:
             return 2
-        elif 'symbol-pause' in markers or 'c_simbol-pause' in markers:
+        elif "symbol-pause" in markers or "c_simbol-pause" in markers:
             return 3
-        elif 'symbol-minus' in markers or 'c_simbol-minus' in markers:
+        elif "symbol-minus" in markers or "c_simbol-minus" in markers:
             return 4
 
     return 0

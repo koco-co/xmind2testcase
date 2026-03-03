@@ -11,7 +11,7 @@ import logging
 import os
 from typing import Any, Dict, List, Tuple
 
-from xmind2testcase.utils import get_absolute_path, get_xmind_testcase_list
+from xmind2cases.utils import get_absolute_path, get_xmind_testcase_list
 
 
 def xmind_to_zentao_csv_file(xmind_file: str) -> str:
