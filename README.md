@@ -1,4 +1,4 @@
-# XMind2TestCase
+# XMind2Cases
 
 <div align="center">
 
@@ -70,9 +70,9 @@ cd xmind2cases
 - ❌ 与 BUG 管理系统难以打通
 - ❌ 团队成员风格各异，沟通成本高
 
-### XMind2TestCase 的价值
+### XMind2Cases 的价值
 
-**XMind2TestCase** 将 **XMind 设计测试用例的便利性** 与 **测试用例系统的高效管理** 完美结合：
+**XMind2Cases** 将 **XMind 设计测试用例的便利性** 与 **测试用例系统的高效管理** 完美结合：
 
 ```
 XMind 思维导图 → 通用模板解析 → 多格式输出 → TestLink/禅道/JSON
@@ -574,22 +574,22 @@ uv publish
 - 🎉 XMind 用例模板定义和解析
 - 🎉 XMind 用例转换为 TestLink 用例文件
 
-> **注意：** XMind2TestCase 针对 XMind 经典系列版本，暂不支持 XMind Zen 版本！
+> **注意：** XMind2Cases 针对 XMind 经典系列版本，暂不支持 XMind Zen 版本！
 
 ---
 
 ## 🙏 致谢
 
-**XMind2TestCase** 的诞生受益于以下开源项目：
+**XMind2Cases** 的诞生受益于以下开源项目：
 
 - **[XMind](https://github.com/zhuifengshen/xmind)** - XMind 思维导图创建、解析、更新的一站式解决方案
 - **[xmind2testlink](https://github.com/tobyqin/xmind2testlink)** - 践行了 XMind 通用测试用例模板设计思路
 - **[TestLink](http://www.testlink.org/)** - 提供了完整的测试用例管理流程和文档
 - **[禅道开源版](https://www.zentao.net/)** - 提供了完整的项目管理流程和文档
 
-得益于开源，也将坚持开源。欢迎大家的 [使用](webtool/static/guide/index.md) 和 [意见反馈](https://github.com/zhuifengshen/xmind2testcase/issues/new)！
+得益于开源，也将坚持开源。欢迎大家的 [使用](webtool/static/guide/index.md) 和 [意见反馈](https://github.com/koco-co/xmind2cases/issues/new)！
 
-如果这个项目对你有帮助，欢迎 ⭐️ [Star](https://github.com/zhuifengshen/xmind2testcase) 支持！
+如果这个项目对你有帮助，欢迎 ⭐️ [Star](https://github.com/koco-co/xmind2cases) 支持！
 
 ![QA之禅](http://upload-images.jianshu.io/upload_images/139581-27c6030ba720846f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
