@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Command-line interface for xmind2testcase."""
+
 import logging
 import sys
-from typing import Optional
 
-from webtool.application import launch
+import click
 
 from xmind2testcase.testlink import xmind_to_testlink_xml_file
 from xmind2testcase.utils import (
@@ -16,9 +16,9 @@ from xmind2testcase.zentao import xmind_to_zentao_csv_file
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s  %(name)s  %(levelname)s  '
-           '[%(module)s - %(funcName)s]: %(message)s',
-    datefmt='%Y/%m/%d %H:%M:%S'
+    format="%(asctime)s  %(name)s  %(levelname)s  "
+    "[%(module)s - %(funcName)s]: %(message)s",
+    datefmt="%Y/%m/%d %H:%M:%S",
 )
 
 USING_DOC = """
@@ -54,9 +54,9 @@ def cli_main() -> None:
     Handles command-line arguments and routes to appropriate conversion
     functions or web tool launcher.
     """
-    if len(sys.argv) > 1 and sys.argv[1].endswith('.xmind'):
+    if len(sys.argv) > 1 and sys.argv[1].endswith(".xmind"):
         _handle_xmind_conversion()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'webtool':
+    elif len(sys.argv) > 1 and sys.argv[1] == "webtool":
         _handle_webtool()
     else:
         print(USING_DOC)
@@ -65,44 +65,57 @@ def cli_main() -> None:
 def _handle_xmind_conversion() -> None:
     """Handle XMind file conversion based on command-line arguments."""
     xmind_file = get_absolute_path(sys.argv[1])
-    logging.info('Start to convert XMind file: %s', xmind_file)
+    logging.info("Start to convert XMind file: %s", xmind_file)
 
-    if len(sys.argv) == 3 and sys.argv[2] == '-json':
+    if len(sys.argv) == 3 and sys.argv[2] == "-json":
         testlink_json_file = xmind_testcase_to_json_file(xmind_file)
-        logging.info('Convert XMind file to testcase json file successfully: '
-                     '%s', testlink_json_file)
-    elif len(sys.argv) == 3 and sys.argv[2] == '-xml':
+        logging.info(
+            "Convert XMind file to testcase json file successfully: %s",
+            testlink_json_file,
+        )
+    elif len(sys.argv) == 3 and sys.argv[2] == "-xml":
         testlink_xml_file = xmind_to_testlink_xml_file(xmind_file)
-        logging.info('Convert XMind file to testlink xml files successfully: '
-                     '%s', testlink_xml_file)
-    elif len(sys.argv) == 3 and sys.argv[2] == '-csv':
+        logging.info(
+            "Convert XMind file to testlink xml files successfully: %s",
+            testlink_xml_file,
+        )
+    elif len(sys.argv) == 3 and sys.argv[2] == "-csv":
         zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)
-        logging.info('Convert XMind file to zentao csv file successfully: '
-                     '%s', zentao_csv_file)
+        logging.info(
+            "Convert XMind file to zentao csv file successfully: %s", zentao_csv_file
+        )
     else:
         testlink_json_file = xmind_testcase_to_json_file(xmind_file)
         testlink_xml_file = xmind_to_testlink_xml_file(xmind_file)
         zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)
-        logging.info('Convert XMind file successfully: \n'
-                     '1、 testcase json file(%s)\n'
-                     '2、 testlink xml file(%s)\n'
-                     '3、 zentao csv file(%s)',
-                     testlink_json_file,
-                     testlink_xml_file,
-                     zentao_csv_file)
+        logging.info(
+            "Convert XMind file successfully: \n"
+            "1、 testcase json file(%s)\n"
+            "2、 testlink xml file(%s)\n"
+            "3、 zentao csv file(%s)",
+            testlink_json_file,
+            testlink_xml_file,
+            zentao_csv_file,
+        )
 
 
 def _handle_webtool() -> None:
     """Handle web tool launch with optional port number."""
+    import uvicorn
+    from api.main import app
+
     if len(sys.argv) == 3:
         try:
             port = int(sys.argv[2])
-            launch(port=port)
         except ValueError:
-            launch()
+            port = 8000
     else:
-        launch()
+        port = 8000
+
+    click.echo(f"Starting FastAPI server on port {port}...")
+    click.echo(f"API docs available at: http://localhost:{port}/docs")
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli_main()
