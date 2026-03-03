@@ -246,6 +246,99 @@ setup_environment() {
     print_success "环境配置完成"
 }
 
+# 验证设置
+verify_setup() {
+    print_step "验证项目配置..."
+
+    # 1. 检查虚拟环境
+    if [[ ! -d ".venv" ]]; then
+        print_error "虚拟环境未创建"
+        exit 1
+    fi
+    print_info "✓ 虚拟环境存在"
+
+    # 2. 检查依赖
+    if ! uv run python -c "import xmindparser, flask, arrow" 2>/dev/null; then
+        print_error "依赖未正确安装"
+        exit 1
+    fi
+    print_info "✓ 依赖已安装"
+
+    # 3. 运行测试套件
+    print_info "运行测试套件..."
+    if uv run pytest tests/ -v --cov=xmind2testcase --cov-report=term-missing; then
+        print_success "测试通过"
+    else
+        print_error "测试失败"
+        exit 1
+    fi
+
+    print_success "项目配置验证完成"
+}
+
+# 验证 XMind 转换功能
+verify_xmind_conversion() {
+    print_step "测试 XMind 转换功能..."
+
+    # 查找测试文件
+    local test_xmind=""
+    if [[ -f "tests/fixtures/test.xmind" ]]; then
+        test_xmind="tests/fixtures/test.xmind"
+    elif [[ -f "docs/xmind_testcase_demo.xmind" ]]; then
+        test_xmind="docs/xmind_testcase_demo.xmind"
+    else
+        print_warning "未找到测试 XMind 文件，跳过转换测试"
+        return 0
+    fi
+
+    # 测试 CSV 转换
+    print_info "测试 CSV 转换..."
+    if uv run python -m xmind2testcase.cli "$test_xmind" -csv; then
+        if [[ -f "testcase.csv" ]]; then
+            print_success "CSV 转换成功"
+            rm -f testcase.csv
+        else
+            print_error "CSV 文件未生成"
+            exit 1
+        fi
+    else
+        print_error "CSV 转换失败"
+        exit 1
+    fi
+
+    # 测试 XML 转换
+    print_info "测试 XML 转换..."
+    if uv run python -m xmind2testcase.cli "$test_xmind" -xml; then
+        if [[ -f "testcase.xml" ]]; then
+            print_success "XML 转换成功"
+            rm -f testcase.xml
+        else
+            print_error "XML 文件未生成"
+            exit 1
+        fi
+    else
+        print_error "XML 转换失败"
+        exit 1
+    fi
+
+    # 测试 JSON 转换
+    print_info "测试 JSON 转换..."
+    if uv run python -m xmind2testcase.cli "$test_xmind" -json; then
+        if [[ -f "testcase.json" ]]; then
+            print_success "JSON 转换成功"
+            rm -f testcase.json
+        else
+            print_error "JSON 文件未生成"
+            exit 1
+        fi
+    else
+        print_error "JSON 转换失败"
+        exit 1
+    fi
+
+    print_success "XMind 转换功能验证完成"
+}
+
 # 参数解析
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
