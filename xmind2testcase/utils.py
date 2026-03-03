@@ -32,8 +32,38 @@ def normalize_xmind_data(xmind_dict: List[Dict[str, Any]]) -> List[Dict[str, Any
     if len(xmind_dict) == 0:
         raise ValueError("XMind data is empty")
 
-    # 暂时返回原始数据
-    return xmind_dict
+    def normalize_topic(topic: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize a single topic node."""
+        if not isinstance(topic, dict):
+            return topic
+
+        # 字段映射：makers → markers
+        if 'makers' in topic:
+            topic['markers'] = topic['makers']
+
+        # 确保 markers 字段存在
+        if 'markers' not in topic:
+            topic['markers'] = []
+
+        # 递归处理子 topics
+        if 'topics' in topic and isinstance(topic['topics'], list):
+            topic['topics'] = [
+                normalize_topic(sub_topic)
+                for sub_topic in topic['topics']
+            ]
+
+        return topic
+
+    # 深拷贝以避免修改原始数据
+    import copy
+    normalized_dict = copy.deepcopy(xmind_dict)
+
+    # 标准化每个 sheet
+    for sheet in normalized_dict:
+        if 'topic' in sheet and isinstance(sheet['topic'], dict):
+            sheet['topic'] = normalize_topic(sheet['topic'])
+
+    return normalized_dict
 
 
 def get_absolute_path(path: str) -> str:
