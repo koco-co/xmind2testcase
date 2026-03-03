@@ -8,20 +8,11 @@
   <a href="https://pypi.org/project/xmind2cases/">
     <img src="https://badge.fury.io/py/xmind2cases.svg" alt="PyPI version">
   </a>
-  <a href="https://github.com/koco-co/xmind2cases/releases">
-    <img src="https://img.shields.io/github/release/koco-co/xmind2cases" alt="GitHub release">
-  </a>
-  <a href="https://github.com/koco-co/xmind2cases/actions/workflows/ci.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/koco-co/xmind2cases/ci.yml?branch=main" alt="CI status">
-  </a>
   <a href="https://pypi.org/project/xmind2cases/">
     <img src="https://img.shields.io/pypi/pyversions/xmind2cases.svg" alt="Python Versions">
   </a>
   <a href="https://github.com/koco-co/xmind2cases/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/koco-co/xmind2cases" alt="License">
-  </a>
-  <a href="https://pypi.org/project/xmind2cases/">
-    <img src="https://img.shields.io/pypi/dm/xmind2cases.svg" alt="Downloads">
   </a>
   <a href="https://github.com/koco-co/xmind2cases">
     <img src="https://img.shields.io/github/last-commit/koco-co/xmind2cases" alt="Last commit">
