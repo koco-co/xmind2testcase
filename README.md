@@ -235,7 +235,7 @@ from xmind2cases.utils import (
 
 
 def main():
-    xmind_file = 'docs/xmind_testcase_template.xmind'
+    xmind_file = 'docs/test.xmind'
     print(f'Start to convert XMind file: {xmind_file}')
 
     # 转换为禅道 CSV
@@ -285,7 +285,7 @@ if __name__ == '__main__':
 ```python
 from xmind2cases.utils import get_xmind_testcase_list
 
-xmind_file = 'docs/xmind_testcase_demo.xmind'
+xmind_file = 'docs/test.xmind'
 testcases = get_xmind_testcase_list(xmind_file)
 ```
 
@@ -347,7 +347,7 @@ testcases = get_xmind_testcase_list(xmind_file)
 ```python
 from xmind2cases.utils import get_xmind_testsuite_list
 
-xmind_file = 'docs/xmind_testcase_demo.xmind'
+xmind_file = 'docs/test.xmind'
 testsuites = get_xmind_testsuite_list(xmind_file)
 ```
 
@@ -405,7 +405,7 @@ testsuites = get_xmind_testsuite_list(xmind_file)
 ```python
 import xmind
 
-xmind_file = 'docs/xmind_testcase_demo.xmind'
+xmind_file = 'docs/test.xmind'
 workbook = xmind.load(xmind_file)
 data = workbook.getData()
 ```
@@ -457,7 +457,7 @@ data = workbook.getData()
 ]
 ```
 
-参考示例：[xmind_testcase_demo.json](docs/xmind_testcase_demo.json)
+参考示例：查看项目源码中的实际测试数据
 
 ---
 
