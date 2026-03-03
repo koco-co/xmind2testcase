@@ -314,7 +314,7 @@ verify_setup() {
 
     # 3. 运行测试套件
     print_info "运行测试套件..."
-    if uv run pytest tests/ -v --cov=xmind2testcase --cov-report=term-missing; then
+    if uv run pytest tests/ -v --cov=xmind2cases --cov-report=term-missing; then
         print_success "测试通过"
     else
         print_error "测试失败"
@@ -341,7 +341,7 @@ verify_xmind_conversion() {
 
     # 测试 CSV 转换
     print_info "测试 CSV 转换..."
-    if uv run python -m xmind2testcase.cli "$test_xmind" -csv; then
+    if uv run python -m xmind2cases.cli "$test_xmind" -csv; then
         if [[ -f "testcase.csv" ]]; then
             print_success "CSV 转换成功"
             rm -f testcase.csv
@@ -356,7 +356,7 @@ verify_xmind_conversion() {
 
     # 测试 XML 转换
     print_info "测试 XML 转换..."
-    if uv run python -m xmind2testcase.cli "$test_xmind" -xml; then
+    if uv run python -m xmind2cases.cli "$test_xmind" -xml; then
         if [[ -f "testcase.xml" ]]; then
             print_success "XML 转换成功"
             rm -f testcase.xml
@@ -371,7 +371,7 @@ verify_xmind_conversion() {
 
     # 测试 JSON 转换
     print_info "测试 JSON 转换..."
-    if uv run python -m xmind2testcase.cli "$test_xmind" -json; then
+    if uv run python -m xmind2cases.cli "$test_xmind" -json; then
         if [[ -f "testcase.json" ]]; then
             print_success "JSON 转换成功"
             rm -f testcase.json
@@ -391,7 +391,7 @@ verify_xmind_conversion() {
 run_linter() {
     print_step "运行代码检查..."
 
-    if uv run ruff check xmind2testcase/ webtool/; then
+    if uv run ruff check xmind2cases/ webtool/; then
         print_success "代码检查通过"
     else
         print_error "代码检查发现问题"
@@ -404,7 +404,7 @@ run_linter() {
 run_type_check() {
     print_step "运行类型检查..."
 
-    if uv run pyright xmind2testcase/; then
+    if uv run pyright xmind2cases/; then
         print_success "类型检查通过"
     else
         print_warning "类型检查发现问题（非阻塞）"
@@ -763,7 +763,7 @@ dev_flow() {
         start_webtool
     else
         print_success "环境配置完成！"
-        print_info "运行 'python -m xmind2testcase.cli webtool' 启动 Web 工具"
+        print_info "运行 'python -m xmind2cases.cli webtool' 启动 Web 工具"
     fi
 }
 
