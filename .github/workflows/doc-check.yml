@@ -1,0 +1,41 @@
+name: Documentation Check
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "api/README.md"
+      - "pyproject.toml"
+  push:
+    paths:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "api/README.md"
+      - "pyproject.toml"
+
+jobs:
+  doc-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install toml
+
+      - name: Run documentation checks
+        run: |
+          python scripts/check_docs.py
+
+      - name: Upload result
+        if: always()
+        run: |
+          echo "Documentation check completed"
