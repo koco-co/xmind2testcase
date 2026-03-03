@@ -1,8 +1,6 @@
 __title__ = "xmind2cases"
 __description__ = "XMind2Cases基于Python实现，提供了一个高效测试用例设计的解决方案！"
-__keywords__ = (
-    "xmind2cases, xmind2cases, testcase, test, testing, xmind, 思维导图, XMind思维导图",
-)
+__keywords__ = ("xmind2cases, testcase, test, testing, xmind, 思维导图, XMind思维导图",)
 __url__ = "https://github.com/zhuifengshen/xmind2cases"
 __author__ = "Devin"
 __author_email__ = "1324556701@qq.com"
