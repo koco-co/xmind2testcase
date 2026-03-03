@@ -97,3 +97,31 @@ def test_normalize_empty_labels():
 
     # 验证添加了 None label
     assert result[0]['topic']['topics'][0]['label'] is None
+
+def test_normalize_default_fields():
+    """测试添加默认字段（note, comment, link, id）"""
+    input_data = [
+        {
+            'title': 'Sheet 1',
+            'topic': {
+                'title': 'Root',
+                'topics': [
+                    {'title': 'Test Case 1'}
+                ]
+            }
+        }
+    ]
+
+    result = normalize_xmind_data(input_data)
+
+    topic = result[0]['topic']['topics'][0]
+
+    # 验证所有默认字段存在
+    assert 'note' in topic
+    assert topic['note'] is None
+    assert 'comment' in topic
+    assert topic['comment'] is None
+    assert 'link' in topic
+    assert topic['link'] is None
+    assert 'id' in topic
+    assert topic['id'] is None

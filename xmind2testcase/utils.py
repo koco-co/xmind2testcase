@@ -52,6 +52,12 @@ def normalize_xmind_data(xmind_dict: List[Dict[str, Any]]) -> List[Dict[str, Any
         elif 'label' not in topic:
             topic['label'] = None
 
+        # 确保其他必需字段存在
+        topic.setdefault('note', None)
+        topic.setdefault('comment', None)
+        topic.setdefault('link', None)
+        topic.setdefault('id', None)
+
         # 递归处理子 topics
         if 'topics' in topic and isinstance(topic['topics'], list):
             topic['topics'] = [
