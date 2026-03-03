@@ -205,8 +205,7 @@ install_tools() {
     # 安装 pyright
     install_tool "pyright" "command -v pyright"
 
-    # 安装 pre-commit
-    install_tool "pre-commit" "command -v pre-commit"
+    # pre-commit 通过 uv sync 安装，不需要单独处理
 
     print_success "开发工具检查完成"
 }
@@ -232,7 +231,7 @@ setup_environment() {
         exit 1
     fi
 
-    # 安装 pre-commit hooks
+    # 安装 pre-commit hooks（pre-commit 已通过 uv sync 安装）
     print_info "安装 pre-commit hooks..."
     if [[ -f ".pre-commit-config.yaml" ]]; then
         if uv run pre-commit install; then

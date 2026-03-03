@@ -43,6 +43,7 @@ dev = [
     "build>=0.10.0",
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "pre-commit>=3.0.0",
 ]
 
 [project.urls]
@@ -59,6 +60,7 @@ dev = [
     "build>=0.10.0",
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "pre-commit>=3.0.0",
 ]
 
 [build-system]
@@ -74,3 +76,9 @@ packages = ["xmind2testcase", "webtool"]
 [tool.hatch.build.targets.wheel.shared-data]
 "webtool/static" = "webtool/static"
 "webtool/templates" = "webtool/templates"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:xmindparser",
+]
+testpaths = ["tests"]
