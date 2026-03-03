@@ -233,14 +233,15 @@ setup_environment() {
     fi
 
     # 安装 pre-commit hooks
-    if command -v pre-commit &> /dev/null; then
-        print_info "安装 pre-commit hooks..."
-        if [[ -f ".pre-commit-config.yaml" ]]; then
-            uv run pre-commit install
+    print_info "安装 pre-commit hooks..."
+    if [[ -f ".pre-commit-config.yaml" ]]; then
+        if uv run pre-commit install; then
             print_success "pre-commit hooks 安装完成"
         else
-            print_info "未找到 .pre-commit-config.yaml，跳过 hooks 安装"
+            print_warning "pre-commit hooks 安装失败（非阻塞）"
         fi
+    else
+        print_info "未找到 .pre-commit-config.yaml，跳过 hooks 安装"
     fi
 
     print_success "环境配置完成"
