@@ -2,6 +2,50 @@
 
 所有重要的项目变更都将记录在此文件中。
 
+## [1.7.0] - 2026-03-04
+
+### Removed
+
+- 🗑️ 移除未完成的 FastAPI REST API 实现
+- 🗑️ 删除 FastAPI 相关目录：`api/`, `migrations/`, `tests/api/`
+- 🗑️ 移除 FastAPI 相关依赖：
+  - fastapi, uvicorn[standard]
+  - sqlalchemy[asyncio], aiosqlite, alembic
+  - pydantic, pydantic-settings
+  - python-multipart, httpx, structlog
+
+### Changed
+
+- 🔄 CLI 命令 `xmind2cases webtool` 改为启动 Flask Web 工具
+- 📝 更新 README.md，移除 FastAPI 启动说明
+- 🔧 更新 init.bat 启动脚本
+- ⚙️ 更新 pyproject.toml 依赖配置
+
+### Performance
+
+- ⚡ 虚拟环境大小减少 ~100MB（150MB → 51MB，-66%）
+- ⚡ 依赖安装速度提升
+- ⚡ 项目启动速度加快
+
+### Code Quality
+
+- ♻️ 删除 2,921 行未完成代码
+- 🧹 简化项目结构，提高可维护性
+- ✅ 所有测试通过（19/19）
+
+### Breaking Changes
+
+- ⚠️ **FastAPI REST API 已完全移除**
+- ⚠️ 如果您使用了 `xmind2cases webtool` 命令，它现在将启动 Flask Web 工具而不是 FastAPI
+- ✅ 核心功能不受影响：CLI、Flask Web 工具、Python API 仍完全可用
+
+### Migration Guide
+
+如果您之前使用了 FastAPI 版本：
+1. Flask Web 工具提供相同的功能
+2. 使用 `uv run python webtool/application.py` 启动
+3. 或者使用命令：`xmind2cases webtool`（默认端口 5002）
+
 ## [1.6.1] - 2026-03-04
 
 ### Added
