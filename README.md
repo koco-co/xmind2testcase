@@ -68,7 +68,8 @@ git clone https://github.com/koco-co/xmind2cases.git
 cd xmind2cases
 
 # 2. 一键启动（自动安装 uv、配置依赖并启动 Web 工具）
-./init.sh
+./init.sh              # 发布模式：快速启动（推荐用户）
+./init.sh --dev        # 开发模式：完整开发环境（推荐开发者）
 ```
 
 **Windows 用户:**
@@ -88,6 +89,11 @@ init.bat
 - ✅ 同步项目依赖
 - ✅ 检测端口占用并提供交互式选项
 - ✅ 启动 Web 工具（http://localhost:5002）
+
+**运行模式说明:**
+
+- **发布模式（默认）**: 只安装核心依赖，快速启动，适合最终用户
+- **开发模式（--dev）**: 安装所有依赖，运行测试，适合开发者
 
 **前置要求:**
 

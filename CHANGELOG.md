@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.3] - 2026-03-04
+
+### Added ✨
+
+- **双模式支持**: init.sh 现在支持两种运行模式
+  - 发布模式（默认）: 快速启动，只安装核心依赖
+  - 开发模式（--dev）: 完整开发环境，包含测试和构建工具
+- 智能依赖检测: 自动检测已安装的依赖，避免重复安装
+- 模式提示: 启动时显示当前运行模式
+
+### Changed 🔄
+
+- 默认安装流程优化: 发布模式跳过测试和 pre-commit hooks
+- 帮助信息更新: 添加模式说明和使用示例
+
+### Removed 🗑️
+
+- 废弃 `--release` 参数: 简化为双模式设计
+
+### Fixed 🐛
+
+- 依赖安装逻辑优化: 使用 uv sync --all-groups 和 --no-dev
+
+---
+
 ## [1.7.2] - 2026-03-04
 
 ### Added
