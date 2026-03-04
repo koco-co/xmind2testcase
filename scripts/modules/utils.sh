@@ -129,16 +129,39 @@ kill_port_process() {
     local port="$1"
 
     if command -v lsof &> /dev/null; then
-        local pid=$(lsof -ti :"$port" 2>/dev/null)
-        if [[ -n "$pid" ]]; then
-            print_info "终止占用端口 $port 的进程 (PID: $pid)..."
-            kill "$pid" 2>/dev/null
-            sleep 1
-            # 如果进程还在，强制杀掉
-            if lsof -ti :"$port" &> /dev/null; then
-                kill -9 "$pid" 2>/dev/null
+        # 获取所有占用端口的 PID（可能多个）
+        local pids=$(lsof -ti :"$port" 2>/dev/null)
+        if [[ -n "$pids" ]]; then
+            print_info "终止占用端口 $port 的进程..."
+            # 逐个终止进程
+            while IFS= read -r pid; do
+                if [[ -n "$pid" ]]; then
+                    kill "$pid" 2>/dev/null || true
+                fi
+            done <<< "$pids"
+
+            # 等待进程退出
+            sleep 2
+
+            # 强制杀掉仍在运行的进程
+            local remaining_pids=$(lsof -ti :"$port" 2>/dev/null)
+            if [[ -n "$remaining_pids" ]]; then
+                while IFS= read -r pid; do
+                    if [[ -n "$pid" ]]; then
+                        kill -9 "$pid" 2>/dev/null || true
+                    fi
+                done <<< "$remaining_pids"
+                sleep 1
             fi
-            return 0
+
+            # 验证端口已释放
+            if ! lsof -ti :"$port" &> /dev/null; then
+                print_success "端口 $port 已释放"
+                return 0
+            else
+                print_warning "端口 $port 仍被占用，可能需要手动清理"
+                return 1
+            fi
         fi
     fi
 
