@@ -15,6 +15,15 @@ RELEASE_MODE=false
 NO_WEBTOOL=false
 LOG_FILE="init-$(date +%Y%m%d-%H%M%S).log"
 
+# 确保 uv 安装路径在 PATH 中（用于通过 curl 运行脚本的情况）
+setup_path() {
+    local local_bin="$HOME/.local/bin"
+    if [[ ":$PATH:" != *":$local_bin:"* ]]; then
+        export PATH="$local_bin:$PATH"
+    fi
+}
+setup_path
+
 # 颜色输出函数
 print_step() {
     echo -e "\033[1;34m➜\033[0m \033[1;36m$1\033[0m"
@@ -87,6 +96,25 @@ check_uv() {
                     print_info "正在安装 uv..."
                     if curl -LsSf https://astral.sh/uv/install.sh | sh; then
                         export PATH="$HOME/.local/bin:$PATH"
+
+                        # 确保 PATH 配置持久化到 shell 配置文件
+                        local shell_config=""
+                        if [[ -n "$ZSH_VERSION" ]]; then
+                            shell_config="$HOME/.zshrc"
+                        elif [[ -n "$BASH_VERSION" ]]; then
+                            shell_config="$HOME/.bashrc"
+                        fi
+
+                        if [[ -n "$shell_config" && -f "$shell_config" ]]; then
+                            local path_line='export PATH="$HOME/.local/bin:$PATH"'
+                            if ! grep -q "$path_line" "$shell_config" 2>/dev/null; then
+                                echo "" >> "$shell_config"
+                                echo "# uv package manager" >> "$shell_config"
+                                echo "$path_line" >> "$shell_config"
+                                print_info "已添加 PATH 配置到 $shell_config"
+                            fi
+                        fi
+
                         print_success "uv 安装完成"
                         return 0
                     else
