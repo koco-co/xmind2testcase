@@ -268,8 +268,8 @@ start_webtool() {
     echo ""
     print_success "Web 工具启动成功！"
     echo ""
-    print_info "访问地址: \033[1;36mhttp://127.0.0.1:$PORT\033[0m"
-    print_info "按 \033[1;31mCtrl+C\033[0m 停止服务"
+    echo "  📱 访问地址: http://127.0.0.1:$PORT"
+    echo "  ⏹  按 Ctrl+C 停止服务"
     echo ""
 
     uv run python webtool/application.py
