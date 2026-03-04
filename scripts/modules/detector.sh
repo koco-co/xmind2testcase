@@ -189,4 +189,14 @@ analyze_environment() {
     fi
 }
 
-export -f detect_uv detect_package_managers detect_python check_uv_installation analyze_environment
+# 检查开发依赖是否已安装
+check_dev_dependencies_installed() {
+    # 使用 uv pip list 检查 pytest 是否存在
+    if uv pip list 2>/dev/null | grep -q "pytest"; then
+        return 0  # 已安装
+    else
+        return 1  # 未安装
+    fi
+}
+
+export -f detect_uv detect_package_managers detect_python check_uv_installation analyze_environment check_dev_dependencies_installed
