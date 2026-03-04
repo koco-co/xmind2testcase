@@ -40,4 +40,4 @@ data/
 # 初始化脚本状态文件
 .init-state.json
 .init-state.json.log
-init-*.log
+init-*.log.setup_state.json
