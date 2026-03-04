@@ -14,7 +14,7 @@ cd "$SCRIPT_DIR"
 source "$SCRIPT_DIR/scripts/init-helpers.sh"
 
 # 全局变量
-RELEASE_MODE=false
+DEV_MODE=false
 NO_WEBTOOL=false
 VERBOSE=false
 STATE_FILE="$SCRIPT_DIR/.init-state.json"
@@ -23,8 +23,8 @@ STATE_FILE="$SCRIPT_DIR/.init-state.json"
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --release)
-                RELEASE_MODE=true
+            --dev)
+                DEV_MODE=true
                 shift
                 ;;
             --no-webtool)
@@ -58,7 +58,7 @@ xmind2cases 项目初始化脚本
   ./init.sh [选项]
 
 选项:
-  --release       启用发布模式（测试、构建、发布到 GitHub 和 PyPI）
+  --dev           启用开发模式（配置环境、运行测试、启动 Web 工具）
   --no-webtool    仅配置环境，不启动 Web 工具
   --verbose       详细输出模式
   --help          显示此帮助信息
@@ -66,14 +66,11 @@ xmind2cases 项目初始化脚本
 示例:
   ./init.sh                # 配置环境并启动 Web 工具
   ./init.sh --no-webtool   # 仅配置环境
-  ./init.sh --release      # 完整发布流程
+  ./init.sh --dev          # 开发模式（包含测试验证）
 
 环境要求:
   - Python 3.12 或更高版本
   - macOS/Linux，或 Windows (WSL/Git Bash)
-
-发布模式环境变量:
-  - UV_PUBLISH_TOKEN    PyPI 发布令牌（必需）
 EOF
 }
 
@@ -302,8 +299,8 @@ main() {
     fi
 
     # 执行流程
-    if [[ "$RELEASE_MODE" == "true" ]]; then
-        release_flow
+    if [[ "$DEV_MODE" == "true" ]]; then
+        dev_flow
     else
         dev_flow
     fi
