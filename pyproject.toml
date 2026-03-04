@@ -35,7 +35,7 @@ dependencies = [
     "xmindparser>=0.1.0",
     "flask>=3.0.0",
     "arrow>=1.0.0",
-    "toml>=0.10.2",
+    "click>=8.0.0",
 ]
 
 [project.optional-dependencies]
