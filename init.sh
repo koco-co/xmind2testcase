@@ -218,20 +218,24 @@ verify_setup() {
     fi
     print_info "✓ 虚拟环境存在"
 
-    # 检查依赖
+    # 检查核心依赖
     if ! uv run python -c "import xmindparser, flask, arrow" 2>/dev/null; then
-        print_error "依赖未正确安装"
+        print_error "核心依赖未正确安装"
         exit 1
     fi
     print_info "✓ 依赖已安装"
 
-    # 运行测试套件
-    print_info "运行测试套件..."
-    if uv run pytest tests/ -v --cov=xmind2cases --cov-report=term-missing; then
-        print_success "测试通过"
+    # 仅在开发模式运行测试
+    if [[ "$DEV_MODE" == "true" ]]; then
+        print_info "运行测试套件..."
+        if uv run pytest tests/ -v --cov=xmind2cases --cov-report=term-missing; then
+            print_success "测试通过"
+        else
+            print_error "测试失败"
+            exit 1
+        fi
     else
-        print_error "测试失败"
-        exit 1
+        print_info "发布模式：跳过测试"
     fi
 
     print_success "项目配置验证完成"
