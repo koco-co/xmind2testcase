@@ -31,6 +31,7 @@
             }
         }
     </script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/preview.css') }}">
 </head>
 <body class="bg-slate-50 font-sans text-slate-600">
     <!-- 顶部操作栏 -->
@@ -63,20 +64,26 @@
                         </div>
                     </div>
 
+                    <!-- 偏好选择器 -->
+                    <div class="preference-selector" id="preference-selector">
+                        <label class="text-sm text-slate-500">偏好:</label>
+                        <select class="text-sm"></select>
+                    </div>
+
                     <!-- 导出按钮 -->
                     <div class="flex flex-wrap items-center gap-2">
-                        <a href="{{ url_for('download_zentao_file',filename= name) }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors text-sm sm:text-base">
+                        <button class="export-btn inline-flex items-center px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors text-sm sm:text-base" data-type="csv">
                             <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                             <span class="hidden sm:inline">导出</span> CSV
-                        </a>
-                        <a href="{{ url_for('download_testlink_file',filename= name) }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base">
+                        </button>
+                        <button class="export-btn inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base" data-type="xml">
                             <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                             </svg>
                             <span class="hidden sm:inline">导出</span> XML
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -90,54 +97,11 @@
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-20 whitespace-nowrap">序号</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-32 whitespace-nowrap">需求名称</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">用例标题</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-32 whitespace-nowrap">优先级</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/3 whitespace-nowrap">步骤与结果</th>
+                            <!-- 由 JS 动态渲染 -->
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-slate-200">
-                        {% for test in suite %}
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ loop.index }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ test.suite }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-700">
-                                <span class="{% if test.name|length>100 %}text-red-600{% endif %}">
-                                    {{ test.name }}
-                                </span>
-                                {% if test.name|length>100 %}
-                                <span class="block mt-1 text-xs text-red-500">⚠️ 标题过长 ({{ test.name|length }} 字符)</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 text-sm">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {% if test.importance == 1 %}bg-red-100 text-red-800
-                                    {% elif test.importance == 2 %}bg-orange-100 text-orange-800
-                                    {% elif test.importance == 3 %}bg-yellow-100 text-yellow-800
-                                    {% else %}bg-slate-100 text-slate-800
-                                    {% endif %}">
-                                    P{{ test.importance }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">
-                                {% if test.steps %}
-                                <ol class="space-y-2">
-                                    {% for step in test.steps %}
-                                    <li>
-                                        <div class="text-slate-700">{{ step.actions }}</div>
-                                        {% if step.expectedresults %}
-                                        <ul class="ml-4 mt-1 text-slate-500 text-xs">
-                                            <li>→ {{ step.expectedresults }}</li>
-                                        </ul>
-                                        {% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ol>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
+                        <!-- 由 JS 动态渲染 -->
                     </tbody>
                 </table>
             </div>
@@ -152,5 +116,11 @@
         <span class="mx-2">|</span>
         Powered by <a href="https://github.com/koco-co/xmind2cases" target="_blank" class="hover:text-slate-600">XMind2Cases</a>
     </footer>
+    <script>
+      // 传递数据给 JS
+      window.TESTCASES = {{ suite | tojson }};
+      document.body.dataset.filename = "{{ name }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/preview.js') }}"></script>
 </body>
 </html>
