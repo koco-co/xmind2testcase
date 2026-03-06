@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ name }} | XMind2Cases Preview</title>
     <link rel="shortcut icon" href="{{ url_for('static',filename='favicon.ico') }}" type="image/x-icon"/>
-    <!-- 保留 Pure.css 直到迁移完成 -->
-    <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static',filename='css/pure-min.css') }}">
-    <link rel="stylesheet" type="text/css" media="all" href="{{ url_for('static',filename='css/custom.css') }}">
-    <!-- 添加 Tailwind CSS -->
-    <!-- TODO: Consider using local version for production to avoid external CDN dependency -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+                        serif: ['Instrument Serif', 'Georgia', 'serif'],
+                    },
                     colors: {
                         slate: {
                             50: '#f8fafc',
@@ -26,6 +28,13 @@
                             700: '#334155',
                             800: '#1e293b',
                             900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
                         }
                     }
                 }
@@ -34,10 +43,10 @@
     </script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/preview.css') }}">
 </head>
-<body class="bg-slate-50 font-sans text-slate-600">
+<body class="preview-page bg-slate-50 font-sans text-slate-600 antialiased">
     <!-- 顶部操作栏 -->
-    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="preview-header bg-white/95 backdrop-blur-sm border-b border-slate-200/80 sticky top-0 z-10 shadow-sm">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center space-x-4">
                     <a href="{{ url_for('index') }}" class="text-slate-600 hover:text-slate-900">
@@ -51,52 +60,44 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-3">
-                    <!-- 统计信息 -->
-                    <div class="hidden sm:flex items-center space-x-4 mr-4">
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-indigo-600">{{ suite_count }}</div>
-                            <div class="text-xs text-slate-500">TestSuites</div>
-                        </div>
-                        <div class="h-8 w-px bg-slate-200"></div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-indigo-600">{{ suite | length }}</div>
-                            <div class="text-xs text-slate-500">TestCases</div>
-                        </div>
+                <div class="header-toolbar flex flex-wrap items-center gap-2">
+                    <div class="header-toolbar-item header-toolbar-stat hidden sm:flex" title="统计">
+                        <div class="header-toolbar-value tabular-nums" id="suite-count-display">{{ suite_count }}</div>
+                        <div class="header-toolbar-label" id="suite-count-label">TestSuites</div>
                     </div>
-
-                    <!-- 偏好选择器 -->
-                    <div class="preference-selector" id="preference-selector">
-                        <label class="text-sm text-slate-500">偏好:</label>
-                        <select class="text-sm"></select>
+                    <div class="header-toolbar-item header-toolbar-stat hidden sm:flex" title="统计">
+                        <div class="header-toolbar-value tabular-nums" id="total-count">{{ total }}</div>
+                        <div class="header-toolbar-label" id="total-count-label">TestCases</div>
                     </div>
-
-                    <!-- 导出按钮 -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" class="export-btn inline-flex items-center px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors text-sm sm:text-base" data-type="csv">
-                            <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            <span class="hidden sm:inline">导出</span> CSV
-                        </button>
-                        <button type="button" class="export-btn inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base" data-type="xml">
-                            <svg class="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                            </svg>
-                            <span class="hidden sm:inline">导出</span> XML
-                        </button>
-                    </div>
+                    <button type="button" class="header-toolbar-item header-toolbar-btn header-toolbar-btn-csv export-btn" data-type="csv">
+                        <svg class="header-toolbar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span class="hidden sm:inline">导出</span> CSV
+                    </button>
+                    <button type="button" class="header-toolbar-item header-toolbar-btn header-toolbar-btn-xml export-btn" data-type="xml">
+                        <svg class="header-toolbar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        <span class="hidden sm:inline">导出</span> XML
+                    </button>
+                    <button type="button" class="header-toolbar-item header-toolbar-btn header-toolbar-btn-settings" id="template-settings-btn" title="模版设置">
+                        <svg class="header-toolbar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        模版设置
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 主内容区域 -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
+    <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="preview-card bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="overflow-x-auto preview-table-container">
+                <table class="min-w-full divide-y divide-slate-200 preview-table">
+                    <thead class="preview-thead">
                         <tr>
                             <!-- 由 JS 动态渲染 -->
                         </tr>
@@ -106,10 +107,12 @@
                     </tbody>
                 </table>
             </div>
+            <div class="pagination-bar px-4 py-3 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2" id="pagination-bar">
+                <!-- 由 JS 动态渲染 -->
+            </div>
         </div>
     </main>
 
-    <!-- 页脚 -->
     <footer class="mt-12 text-center text-sm text-slate-400 pb-8">
         <a href="{{ url_for('static', filename='guide/index.html') }}" target="_blank" class="hover:text-slate-600">使用指南</a>
         <span class="mx-2">|</span>
@@ -118,9 +121,9 @@
         Powered by <a href="https://github.com/koco-co/xmind2cases" target="_blank" class="hover:text-slate-600">XMind2Cases</a>
     </footer>
     <script>
-      // 传递数据给 JS
-      window.TESTCASES = {{ suite | tojson }};
+      window.TESTCASES = [];
       document.body.dataset.filename = "{{ name }}";
+      document.body.dataset.total = "{{ total }}";
     </script>
     <script src="{{ url_for('static', filename='js/preview.js') }}"></script>
 </body>
