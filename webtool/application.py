@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 """Flask web application for XMind to testcase conversion."""
 
+import json
 import logging
 import os
 import re
-import sqlite3
-from contextlib import closing
 from os.path import exists, join
 from typing import Any, Generator, List, Optional, Tuple
 
@@ -23,6 +22,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
+from webtool.models import ColumnPreference, DEFAULT_COLUMNS, Record, db
 from xmind2cases.testlink import xmind_to_testlink_xml_file
 from xmind2cases.utils import get_xmind_testcase_list, get_xmind_testsuites
 from xmind2cases.zentao import xmind_to_zentao_csv_file
@@ -64,23 +64,10 @@ PORT = int(os.environ.get("FLASK_PORT", "5002"))
 # Flask app
 app = Flask(__name__)
 app.config.from_object(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
-def connect_db() -> sqlite3.Connection:
-    """Connect to the SQLite database.
-
-    Returns:
-        SQLite database connection.
-    """
-    return sqlite3.connect(app.config["DATABASE"])
-
-
-def init_db() -> None:
-    """Initialize the database with schema from schema.sql."""
-    with closing(connect_db()) as db:
-        with app.open_resource("schema.sql", mode="r") as f:
-            db.cursor().executescript(f.read())
-        db.commit()
+db.init_app(app)
 
 
 def init() -> None:
@@ -89,30 +76,23 @@ def init() -> None:
     if not exists(UPLOAD_FOLDER):
         os.mkdir(UPLOAD_FOLDER)
 
-    if not exists(DATABASE):
-        init_db()
+    with app.app_context():
+        db.create_all()
+
+        # 插入默认偏好（如果不存在）
+        if ColumnPreference.query.count() == 0:
+            default_pref = ColumnPreference(
+                name="默认",
+                columns_json=json.dumps(DEFAULT_COLUMNS, ensure_ascii=False),
+                is_default=True
+            )
+            db.session.add(default_pref)
+            db.session.commit()
+
     app.logger.info(
         "Congratulations! the xmind2cases webtool database "
         "has initialized successfully!"
     )
-
-
-@app.before_request
-def before_request() -> None:
-    """Set up database connection before each request."""
-    g.db = connect_db()
-
-
-@app.teardown_request
-def teardown_request(exception: Optional[Exception]) -> None:
-    """Close database connection after each request.
-
-    Args:
-        exception: Optional exception that occurred during request.
-    """
-    db = getattr(g, "db", None)
-    if db is not None:
-        db.close()
 
 
 def insert_record(xmind_name: str, note: str = "") -> None:
@@ -122,11 +102,10 @@ def insert_record(xmind_name: str, note: str = "") -> None:
         xmind_name: Name of the XMind file.
         note: Optional note for the record.
     """
-    cursor = g.db.cursor()
     now = str(arrow.now())
-    sql = "INSERT INTO records (name,create_on,note) VALUES (?,?,?)"
-    cursor.execute(sql, (xmind_name, now, str(note)))
-    g.db.commit()
+    record = Record(name=xmind_name, create_on=now, note=note)
+    db.session.add(record)
+    db.session.commit()
 
 
 def _get_related_file_paths(filename: str) -> List[str]:
@@ -166,11 +145,10 @@ def delete_record(filename: str, record_id: int) -> None:
         record_id: Database record ID.
     """
     _delete_related_files(filename)
-
-    cursor = g.db.cursor()
-    sql = "UPDATE records SET is_deleted=1 WHERE id = ?"
-    cursor.execute(sql, (record_id,))
-    g.db.commit()
+    record = Record.query.get(record_id)
+    if record:
+        record.is_deleted = 1
+        db.session.commit()
 
 
 def delete_records(keep: int = 20) -> None:
@@ -181,21 +159,11 @@ def delete_records(keep: int = 20) -> None:
     Args:
         keep: Number of recent records to keep.
     """
-    assert isinstance(g.db, sqlite3.Connection)
-    cursor = g.db.cursor()
-    sql = (
-        "SELECT * from records where is_deleted<>1 ORDER BY id desc LIMIT -1 offset {}"
-    ).format(keep)
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-
-    for row in rows:
-        name = row[1]
-        _delete_related_files(name)
-
-        sql = "UPDATE records SET is_deleted=1 WHERE id = ?"
-        cursor.execute(sql, (row[0],))
-        g.db.commit()
+    records = Record.query.filter_by(is_deleted=0).order_by(Record.id.desc()).offset(keep).all()
+    for record in records:
+        _delete_related_files(record.name)
+        record.is_deleted = 1
+    db.session.commit()
 
 
 def get_latest_record() -> Optional[Tuple[str, str, str, str, int]]:
@@ -204,9 +172,11 @@ def get_latest_record() -> Optional[Tuple[str, str, str, str, int]]:
     Returns:
         Tuple of (short_name, name, create_on, note, record_id) or None.
     """
-    found = list(get_records(1))
-    if found:
-        return found[0]
+    record = Record.query.filter_by(is_deleted=0).order_by(Record.id.desc()).first()
+    if record:
+        short_name = record.name[:120] + "..." if len(record.name) > 120 else record.name
+        create_on = arrow.get(record.create_on).humanize()
+        return short_name, record.name, create_on, record.note or "", record.id
     return None
 
 
@@ -221,28 +191,11 @@ def get_records(
     Yields:
         Tuples of (short_name, name, create_on, note, record_id).
     """
-    short_name_length = 120
-    cursor = g.db.cursor()
-    sql = (
-        "select * from records where is_deleted<>1 order by id desc limit {}"
-    ).format(int(limit))
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-
-    for row in rows:
-        name = row[1]
-        short_name = name
-        create_on = row[2]
-        note = row[3]
-        record_id = row[0]
-
-        # Shorten the name for display
-        if len(name) > short_name_length:
-            short_name = name[:short_name_length] + "..."
-
-        # More readable time format
-        create_on = arrow.get(create_on).humanize()
-        yield short_name, name, create_on, note, record_id
+    records = Record.query.filter_by(is_deleted=0).order_by(Record.id.desc()).limit(limit).all()
+    for record in records:
+        short_name = record.name[:120] + "..." if len(record.name) > 120 else record.name
+        create_on = arrow.get(record.create_on).humanize()
+        yield short_name, record.name, create_on, record.note or "", record.id
 
 
 def allowed_file(filename: str) -> bool:
