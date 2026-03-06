@@ -1,0 +1,487 @@
+/* 预览页面列自定义样式 */
+
+/* ========== 表头拖拽相关 ========== */
+.column-header {
+  position: relative;
+  cursor: move;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.column-header:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.column-header.dragging {
+  opacity: 0.5;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.column-header.drag-over {
+  border-left: 3px solid #3b82f6;
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+/* ========== 拖拽手柄 ========== */
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  cursor: grab;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: #3b82f6;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ========== 列操作按钮 ========== */
+.column-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.column-header:hover .column-actions {
+  opacity: 1;
+}
+
+.column-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.column-actions button:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.column-actions button.delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* ========== 新增列按钮 ========== */
+.add-column-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 2px dashed #d1d5db;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-column-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.add-column-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ========== 弹窗样式 ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 400px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-field {
+  margin-bottom: 16px;
+}
+
+.modal-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-field input:focus,
+.modal-field select:focus,
+.modal-field textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-actions button.cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.modal-actions button.cancel:hover {
+  background: #e5e7eb;
+}
+
+.modal-actions button.confirm {
+  background: #3b82f6;
+  color: white;
+}
+
+.modal-actions button.confirm:hover {
+  background: #2563eb;
+}
+
+/* ========== 独立按钮类 (spec 兼容) ========== */
+.btn-cancel {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.btn-confirm {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm:hover {
+  background: #2563eb;
+}
+
+/* ========== 偏好选择器 ========== */
+.preference-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.preference-selector .preference-option {
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preference-selector .preference-option:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.preference-selector .preference-option.selected {
+  border-color: #3b82f6;
+  background: #3b82f6;
+  color: white;
+}
+
+/* ========== 自定义单元格 ========== */
+.custom-cell {
+  position: relative;
+  padding: 8px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.custom-cell:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.custom-cell.editing {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.custom-cell input,
+.custom-cell select,
+.custom-cell textarea {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+}
+
+.custom-cell input:focus,
+.custom-cell select:focus,
+.custom-cell textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ========== 导出弹窗 ========== */
+.export-modal {
+  min-width: 500px;
+}
+
+.export-modal .modal-content {
+  min-width: 500px;
+}
+
+.preference-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.preference-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.preference-item:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.preference-item.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.preference-item input[type="radio"],
+.preference-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.preference-item .preference-info {
+  flex: 1;
+}
+
+.preference-item .preference-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.preference-item .preference-description {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ========== 工具提示 ========== */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: #1f2937;
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  margin-bottom: 6px;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* ========== 加载状态 ========== */
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+}
+
+.loading::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+/* ========== 响应式调整 ========== */
+@media (max-width: 768px) {
+  .modal-content {
+    min-width: 90%;
+    max-width: 90%;
+    padding: 16px;
+  }
+
+  .export-modal .modal-content {
+    min-width: 90%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+
+  .preference-list {
+    max-height: 300px;
+  }
+}
