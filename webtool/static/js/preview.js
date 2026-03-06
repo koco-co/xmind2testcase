@@ -15,6 +15,16 @@ const ColumnManager = {
   _draggedColumn: null,
 
   /**
+   * 转义 HTML 特殊字符，防止 XSS
+   */
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  },
+
+  /**
    * 初始化模块
    */
   async init() {
@@ -120,7 +130,7 @@ const ColumnManager = {
     container.innerHTML = this.preferences.map(pref => `
       <button class="preference-option ${pref.id === this.currentPreference?.id ? 'selected' : ''}"
               data-pref-id="${pref.id}">
-        ${pref.name}
+        ${this.escapeHtml(pref.name)}
       </button>
     `).join('');
 
@@ -174,7 +184,7 @@ const ColumnManager = {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
               </svg>
             </span>
-            <span>${col.name}</span>
+            <span>${this.escapeHtml(col.name)}</span>
             ${col.is_custom ? '<span class="ml-2 text-xs text-indigo-600">(自定义)</span>' : ''}
             <div class="column-actions">
               <button class="edit-btn" title="编辑列">
@@ -242,32 +252,32 @@ const ColumnManager = {
     if (isCustom) {
       // 自定义列：从 values 中获取，或使用默认值
       const values = column.values || {};
-      return values[rowIndex] || defaultValue;
+      return this.escapeHtml(values[rowIndex] || defaultValue);
     }
 
     // 原始列：从 testcase 获取
     switch (colId) {
       case 'suite':
-        return testcase.suite || '';
+        return this.escapeHtml(testcase.suite || '');
       case 'name':
         const name = testcase.name || '';
         const isTooLong = name.length > 100;
         return `
-          <span class="${isTooLong ? 'text-red-600' : ''}">${name}</span>
+          <span class="${isTooLong ? 'text-red-600' : ''}">${this.escapeHtml(name)}</span>
           ${isTooLong ? `<span class="block mt-1 text-xs text-red-500">⚠️ 标题过长 (${name.length} 字符)</span>` : ''}
         `;
       case 'preconditions':
-        return testcase.preconditions || '';
+        return this.escapeHtml(testcase.preconditions || '');
       case 'steps':
         const steps = testcase.steps || [];
         return `
           <ol class="space-y-2">
             ${steps.map((step, i) => `
               <li>
-                <div class="text-slate-700">${step.actions}</div>
+                <div class="text-slate-700">${this.escapeHtml(step.actions)}</div>
                 ${step.expectedresults ? `
                   <ul class="ml-4 mt-1 text-slate-500 text-xs">
-                    <li>→ ${step.expectedresults}</li>
+                    <li>→ ${this.escapeHtml(step.expectedresults)}</li>
                   </ul>
                 ` : ''}
               </li>
@@ -276,7 +286,7 @@ const ColumnManager = {
         `;
       case 'expectedresults':
         const stepsForExpected = testcase.steps || [];
-        return stepsForExpected.map((step, i) => `${i + 1}. ${step.expectedresults || ''}`).join('\n');
+        return stepsForExpected.map((step, i) => `${i + 1}. ${this.escapeHtml(step.expectedresults || '')}`).join('\n');
       case 'importance':
         const importance = testcase.importance || 3;
         const colors = {
@@ -291,11 +301,11 @@ const ColumnManager = {
           </span>
         `;
       case 'execution_type':
-        return defaultValue || testcase.execution_type || '';
+        return this.escapeHtml(defaultValue || testcase.execution_type || '');
       case 'stage':
-        return defaultValue;
+        return this.escapeHtml(defaultValue);
       default:
-        return defaultValue;
+        return this.escapeHtml(defaultValue);
     }
   },
 
@@ -488,14 +498,14 @@ const ColumnManager = {
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `
       <div class="modal-content">
-        <div class="modal-title">${title}</div>
+        <div class="modal-title">${this.escapeHtml(title)}</div>
         <div class="modal-field">
           <label>列名称</label>
-          <input type="text" id="modal-name" value="${data.name || ''}" placeholder="请输入列名称">
+          <input type="text" id="modal-name" value="${this.escapeHtml(data.name || '')}" placeholder="请输入列名称">
         </div>
         <div class="modal-field">
           <label>默认值</label>
-          <input type="text" id="modal-default" value="${data.default_value || ''}" placeholder="请输入默认值（可选）">
+          <input type="text" id="modal-default" value="${this.escapeHtml(data.default_value || '')}" placeholder="请输入默认值（可选）">
         </div>
         <div class="modal-actions">
           <button class="btn-cancel" id="modal-cancel">取消</button>
@@ -610,7 +620,7 @@ const ColumnManager = {
       return;
     }
 
-    if (!confirm(`确定删除列"${column.name}"吗？`)) {
+    if (!confirm(`确定删除列"${this.escapeHtml(column.name)}"吗？`)) {
       return;
     }
 
@@ -709,7 +719,7 @@ const ColumnManager = {
                 <input type="radio" name="export-pref" value="${pref.id}"
                        ${pref.id === this.currentPreference?.id ? 'checked' : ''}>
                 <div class="preference-info">
-                  <div class="preference-name">${pref.name}</div>
+                  <div class="preference-name">${this.escapeHtml(pref.name)}</div>
                   <div class="preference-description">
                     ${pref.columns.filter(c => c.visible !== false).length} 列
                     ${pref.is_default ? ' · 默认' : ''}
@@ -721,7 +731,7 @@ const ColumnManager = {
         </div>
         <div class="modal-actions">
           <button class="btn-cancel" id="export-cancel">取消</button>
-          <button class="btn-confirm" id="export-confirm">导出 ${type.toUpperCase()}</button>
+          <button class="btn-confirm" id="export-confirm">导出 ${this.escapeHtml(type.toUpperCase())}</button>
         </div>
       </div>
     `;
