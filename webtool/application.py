@@ -10,6 +10,7 @@ import os
 import re
 from os.path import exists, join
 from typing import Any, Generator, List, Optional, Tuple
+from urllib.parse import quote
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 
@@ -28,7 +29,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
-from webtool.models import ColumnPreference, DEFAULT_COLUMNS, Record, db
+from webtool.models import AppSetting, ColumnTemplate, DEFAULT_COLUMNS, Record, db
 from xmind2cases.testlink import xmind_to_testlink_xml_file
 from xmind2cases.utils import get_xmind_testcase_list, get_xmind_testsuites
 from xmind2cases.zentao import xmind_to_zentao_csv_file
@@ -85,14 +86,47 @@ def init() -> None:
     with app.app_context():
         db.create_all()
 
-        # 插入默认偏好（如果不存在）
-        if ColumnPreference.query.count() == 0:
-            default_pref = ColumnPreference(
+        # 迁移：为 column_preferences 添加 header_color 列（若不存在）
+        try:
+            from sqlalchemy import text
+            result = db.session.execute(text("PRAGMA table_info(column_preferences)"))
+            columns = [row[1] for row in result]
+            if 'header_color' not in columns:
+                db.session.execute(text(
+                    "ALTER TABLE column_preferences ADD COLUMN header_color VARCHAR(20) DEFAULT '#fef2f2'"
+                ))
+                db.session.commit()
+            # 将非浅红色的 header_color 修正为 #fef2f2（浅红色）
+            non_red = ("#f8fafc", "#e0e0e0", "#e2e8f0", "#f1f5f9", "#3b82f6", "#4f46e5", "#6366f1")
+            for color in non_red:
+                db.session.execute(
+                    text("UPDATE column_preferences SET header_color = '#fef2f2' WHERE header_color = :c"),
+                    {"c": color}
+                )
+            db.session.execute(
+                text("UPDATE column_preferences SET header_color = '#fef2f2' WHERE header_color IS NULL OR header_color = ''")
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        # 迁移：last_export_preference_id -> last_export_template_id
+        try:
+            old_setting = AppSetting.query.get('last_export_preference_id')
+            new_setting = AppSetting.query.get('last_export_template_id')
+            if old_setting and old_setting.value and not new_setting:
+                db.session.add(AppSetting(key='last_export_template_id', value=old_setting.value))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        # 插入默认模版（如果不存在）
+        if ColumnTemplate.query.count() == 0:
+            default_tpl = ColumnTemplate(
                 name="默认",
                 columns_json=json.dumps(DEFAULT_COLUMNS, ensure_ascii=False),
-                is_default=True
             )
-            db.session.add(default_pref)
+            db.session.add(default_tpl)
             db.session.commit()
 
     app.logger.info(
@@ -172,58 +206,70 @@ def delete_records(keep: int = 20) -> None:
     db.session.commit()
 
 
+def _is_value_empty(val: Any) -> bool:
+    """判断值是否为空（用于空值校验）"""
+    if val is None:
+        return True
+    if isinstance(val, str):
+        return (val or "").strip() == ""
+    return False
+
+
 def get_column_value(testcase: dict, column: dict, row_index: int) -> str:
-    """根据列配置获取单元格值"""
+    """根据列配置获取单元格值（row_index 为 0-based）"""
     col_id = column.get('id')
     is_custom = column.get('is_custom', False)
     default_value = column.get('default_value', '')
 
     if is_custom:
-        # 自定义列：从 values 中获取，或使用默认值
         values = column.get('values', {})
         return values.get(str(row_index), default_value)
 
-    # 原始列：从 testcase 获取
     if col_id == 'suite':
         return testcase.get('suite', '')
-    elif col_id == 'name':
+    if col_id == 'name':
         return testcase.get('name', '')
-    elif col_id == 'preconditions':
+    if col_id == 'preconditions':
         return testcase.get('preconditions', '')
-    elif col_id == 'steps':
+    if col_id == 'steps':
         steps = testcase.get('steps', [])
         return '\n'.join([f"{i+1}. {s.get('actions', '')}" for i, s in enumerate(steps)])
-    elif col_id == 'expectedresults':
+    if col_id == 'expectedresults':
         steps = testcase.get('steps', [])
         return '\n'.join([f"{i+1}. {s.get('expectedresults', '')}" for i, s in enumerate(steps)])
-    elif col_id == 'importance':
+    if col_id == 'importance':
         return str(testcase.get('importance', ''))
-    elif col_id == 'execution_type':
+    if col_id == 'execution_type':
         return default_value or str(testcase.get('execution_type', ''))
-    elif col_id == 'stage':
+    if col_id == 'stage':
         return default_value
 
     return default_value
 
 
+def _format_cell_for_export(value: str, column: dict) -> str:
+    """若列启用富文本换行处理，将换行符替换为 <br>"""
+    if not value:
+        return value
+    if column.get('rich_text_break'):
+        return value.replace('\n', '<br>')
+    return value
+
+
 def generate_csv_with_columns(testcases: list, columns: list) -> str:
-    """根据列配置生成 CSV 内容"""
+    """根据列配置生成 CSV 内容（不含序号列）"""
     output = io.StringIO()
     writer = csv.writer(output, lineterminator='\n')
 
-    # 过滤可见列并排序
-    visible_columns = sorted(
-        [c for c in columns if c.get('visible', True)],
-        key=lambda x: x.get('order', 0)
-    )
-
-    # 写入表头
+    visible_columns = sorted(columns, key=lambda x: x.get('order', 0))
     header = [c.get('name', '') for c in visible_columns]
     writer.writerow(header)
 
-    # 写入数据行
-    for idx, tc in enumerate(testcases, 1):
-        row = [get_column_value(tc, c, idx) for c in visible_columns]
+    for row_index, tc in enumerate(testcases):
+        row = [
+            _format_cell_for_export(get_column_value(tc, c, row_index), c)
+            for c in visible_columns
+        ]
         writer.writerow(row)
 
     return output.getvalue()
@@ -231,31 +277,22 @@ def generate_csv_with_columns(testcases: list, columns: list) -> str:
 
 def generate_xml_with_columns(testcases: list, columns: list) -> str:
     """根据列配置生成 TestLink XML 内容"""
-    # 过滤可见列并排序
-    visible_columns = sorted(
-        [c for c in columns if c.get('visible', True)],
-        key=lambda x: x.get('order', 0)
-    )
-
+    visible_columns = sorted(columns, key=lambda x: x.get('order', 0))
     root = Element('testcases')
 
-    for idx, tc in enumerate(testcases, 1):
+    for row_index, tc in enumerate(testcases):
         testcase_el = SubElement(root, 'testcase')
         testcase_el.set('name', tc.get('name', ''))
 
-        # 添加 summary
         summary = SubElement(testcase_el, 'summary')
         summary.text = tc.get('name', '')
 
-        # 添加 preconditions
         preconditions = SubElement(testcase_el, 'preconditions')
         preconditions.text = tc.get('preconditions', '')
 
-        # 添加 importance
         importance = SubElement(testcase_el, 'importance')
         importance.text = str(tc.get('importance', 2))
 
-        # 添加 steps
         steps_el = SubElement(testcase_el, 'steps')
         for step_idx, step in enumerate(tc.get('steps', []), 1):
             step_el = SubElement(steps_el, 'step')
@@ -266,7 +303,6 @@ def generate_xml_with_columns(testcases: list, columns: list) -> str:
             expected = SubElement(step_el, 'expectedresults')
             expected.text = step.get('expectedresults', '')
 
-        # 添加自定义列作为 custom_fields
         custom_columns = [c for c in visible_columns if c.get('is_custom')]
         if custom_columns:
             custom_fields_el = SubElement(testcase_el, 'custom_fields')
@@ -275,9 +311,10 @@ def generate_xml_with_columns(testcases: list, columns: list) -> str:
                 name_el = SubElement(cf_el, 'name')
                 name_el.text = col.get('name', '')
                 value_el = SubElement(cf_el, 'value')
-                value_el.text = get_column_value(tc, col, idx)
+                value_el.text = _format_cell_for_export(
+                    get_column_value(tc, col, row_index), col
+                )
 
-    # 格式化 XML
     rough_string = tostring(root, encoding='unicode')
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
@@ -503,7 +540,7 @@ def download_zentao_file(filename: str) -> Any:
     return _download_converted_file(filename, xmind_to_zentao_csv_file, "csv")
 
 
-@app.route("/preview/<filename>")
+@app.route("/preview/<path:filename>")
 def preview_file(filename: str) -> Any:
     """Preview testcases from an uploaded XMind file.
 
@@ -521,10 +558,84 @@ def preview_file(filename: str) -> Any:
     testsuites = get_xmind_testsuites(full_path)
     suite_count = sum(len(suite.sub_suites or []) for suite in testsuites)
     testcases = get_xmind_testcase_list(full_path)
+    total = len(testcases)
 
     return render_template(
-        "preview.html", name=filename, suite=testcases, suite_count=suite_count
+        "preview.html",
+        name=filename,
+        suite=[],
+        suite_count=suite_count,
+        total=total,
     )
+
+
+@app.route("/api/preview/<path:filename>/empty-cells", methods=["GET"])
+def get_empty_cells(filename: str) -> Any:
+    """全局检测空值，返回所有空值单元格列表"""
+    full_path = join(app.config["UPLOAD_FOLDER"], filename)
+    if not exists(full_path):
+        abort(404)
+
+    template_id = request.args.get("template_id", type=int)
+    if not template_id:
+        return jsonify({"success": True, "data": {"empty_cells": []}})
+
+    tpl = ColumnTemplate.query.get(template_id)
+    columns = tpl.columns if tpl else DEFAULT_COLUMNS
+    sorted_columns = sorted(columns, key=lambda x: x.get("order", 0))
+    empty_check_cols = [c for c in sorted_columns if c.get("empty_check") is True]
+
+    if not empty_check_cols:
+        return jsonify({"success": True, "data": {"empty_cells": []}})
+
+    testcases = get_xmind_testcase_list(full_path)
+    empty_cells = []
+    for row_index, tc in enumerate(testcases):
+        for col in empty_check_cols:
+            val = get_column_value(tc, col, row_index)
+            if _is_value_empty(val):
+                empty_cells.append({
+                    "colId": col.get("id", ""),
+                    "rowIndex": row_index,
+                    "colName": col.get("name", col.get("id", "")),
+                })
+
+    return jsonify({
+        "success": True,
+        "data": {"empty_cells": empty_cells},
+    })
+
+
+@app.route("/api/preview/<path:filename>/cases", methods=["GET"])
+def get_preview_cases(filename: str) -> Any:
+    """分页获取预览用例数据"""
+    full_path = join(app.config["UPLOAD_FOLDER"], filename)
+
+    if not exists(full_path):
+        abort(404)
+
+    page = request.args.get("page", 1, type=int)
+    page_size = request.args.get("page_size", 10, type=int)
+
+    if page_size not in (10, 20, 50, 100):
+        page_size = 10
+    page = max(1, page)
+
+    testcases = get_xmind_testcase_list(full_path)
+    total = len(testcases)
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_data = testcases[start:end]
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "testcases": page_data,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        },
+    })
 
 
 @app.route("/delete/<filename>/<int:record_id>")
@@ -546,160 +657,204 @@ def delete_file(filename: str, record_id: int) -> Any:
     return redirect("/")
 
 
-# ==================== 偏好管理 API ====================
+# ==================== 模版管理 API ====================
 
-@app.route('/api/preferences', methods=['GET'])
-def get_preferences():
-    """获取所有偏好列表"""
-    preferences = ColumnPreference.query.order_by(ColumnPreference.id).all()
+@app.route('/api/templates', methods=['GET'])
+def get_templates():
+    """获取所有模版列表，以及上次导出使用的模版 ID"""
+    templates = ColumnTemplate.query.order_by(ColumnTemplate.id).all()
+    last_tpl = AppSetting.query.get('last_export_template_id')
+    last_tpl_id = int(last_tpl.value) if last_tpl and last_tpl.value else None
+
     return jsonify({
         "success": True,
-        "data": [p.to_dict() for p in preferences]
+        "data": {
+            "templates": [t.to_dict() for t in templates],
+            "last_template_id": last_tpl_id,
+        },
     })
 
 
-@app.route('/api/preferences/<int:pref_id>', methods=['GET'])
-def get_preference(pref_id):
-    """获取单个偏好详情"""
-    pref = ColumnPreference.query.get(pref_id)
-    if not pref:
-        return jsonify({"success": False, "message": "偏好不存在"}), 404
+@app.route('/api/templates/<int:template_id>', methods=['GET'])
+def get_template(template_id):
+    """获取单个模版详情"""
+    tpl = ColumnTemplate.query.get(template_id)
+    if not tpl:
+        return jsonify({"success": False, "message": "模版不存在"}), 404
     return jsonify({
         "success": True,
-        "data": pref.to_dict()
+        "data": tpl.to_dict(),
     })
 
 
-@app.route('/api/preferences', methods=['POST'])
-def create_preference():
-    """新建偏好"""
-    data = request.get_json()
-    name = data.get('name', '新偏好')
+def _next_unnamed_template_name(base: str = '未命名模版') -> str:
+    """当 base 已存在时，返回 base(2)、base(3) 等下一个可用名称"""
+    import re
+    existing = {t.name for t in ColumnTemplate.query.all()}
+    if base not in existing:
+        return base
+    pattern = re.compile(r'^' + re.escape(base) + r'\((\d+)\)$')
+    nums = []
+    for n in existing:
+        m = pattern.match(n)
+        if m:
+            nums.append(int(m.group(1)))
+    next_num = max(nums, default=1) + 1
+    return f'{base}({next_num})'
+
+
+@app.route('/api/templates', methods=['POST'])
+def create_template():
+    """新建模版"""
+    data = request.get_json() or {}
+    name = data.get('name', '未命名模版')
     columns = data.get('columns', DEFAULT_COLUMNS)
 
-    pref = ColumnPreference(
+    if name == '未命名模版':
+        name = _next_unnamed_template_name('未命名模版')
+    if len(name) > 20:
+        return jsonify({"success": False, "message": "模版名称最多20个字符"}), 400
+    if ColumnTemplate.query.filter_by(name=name).first():
+        return jsonify({"success": False, "message": "模版名称已存在"}), 400
+
+    tpl = ColumnTemplate(
         name=name,
         columns_json=json.dumps(columns, ensure_ascii=False),
-        is_default=False
+        header_color=data.get('header_color', '#fef2f2'),
     )
-    db.session.add(pref)
+    db.session.add(tpl)
     db.session.commit()
 
     return jsonify({
         "success": True,
-        "data": {"id": pref.id}
+        "data": {"id": tpl.id},
     })
 
 
-@app.route('/api/preferences/<int:pref_id>', methods=['PUT'])
-def update_preference(pref_id):
-    """更新偏好"""
-    pref = ColumnPreference.query.get(pref_id)
-    if not pref:
-        return jsonify({"success": False, "message": "偏好不存在"}), 404
+@app.route('/api/templates/<int:template_id>', methods=['PUT'])
+def update_template(template_id):
+    """更新模版"""
+    tpl = ColumnTemplate.query.get(template_id)
+    if not tpl:
+        return jsonify({"success": False, "message": "模版不存在"}), 404
 
-    data = request.get_json()
+    data = request.get_json() or {}
     if 'name' in data:
-        pref.name = data['name']
+        new_name = (data['name'] or '').strip()
+        if len(new_name) > 20:
+            return jsonify({"success": False, "message": "模版名称最多20个字符"}), 400
+        if new_name and ColumnTemplate.query.filter(
+            ColumnTemplate.name == new_name,
+            ColumnTemplate.id != template_id,
+        ).first():
+            return jsonify({"success": False, "message": "模版名称已存在"}), 400
+        tpl.name = new_name or tpl.name
     if 'columns' in data:
-        pref.columns_json = json.dumps(data['columns'], ensure_ascii=False)
+        tpl.columns_json = json.dumps(data['columns'], ensure_ascii=False)
+    if 'header_color' in data:
+        tpl.header_color = data['header_color'] or '#fef2f2'
 
     db.session.commit()
 
     return jsonify({
         "success": True,
-        "message": "偏好已更新"
+        "message": "模版已更新",
     })
 
 
-@app.route('/api/preferences/<int:pref_id>', methods=['DELETE'])
-def delete_preference(pref_id):
-    """删除偏好"""
-    pref = ColumnPreference.query.get(pref_id)
-    if not pref:
-        return jsonify({"success": False, "message": "偏好不存在"}), 404
+@app.route('/api/templates/<int:template_id>', methods=['DELETE'])
+def delete_template(template_id):
+    """删除模版"""
+    tpl = ColumnTemplate.query.get(template_id)
+    if not tpl:
+        return jsonify({"success": False, "message": "模版不存在"}), 404
 
-    if pref.is_default:
-        return jsonify({"success": False, "message": "不能删除默认偏好"}), 400
-
-    db.session.delete(pref)
+    db.session.delete(tpl)
     db.session.commit()
 
     return jsonify({
         "success": True,
-        "message": "偏好已删除"
-    })
-
-
-@app.route('/api/preferences/<int:pref_id>/default', methods=['POST'])
-def set_default_preference(pref_id):
-    """设为默认偏好"""
-    pref = ColumnPreference.query.get(pref_id)
-    if not pref:
-        return jsonify({"success": False, "message": "偏好不存在"}), 404
-
-    # 取消其他默认
-    ColumnPreference.query.update({'is_default': False})
-    pref.is_default = True
-    db.session.commit()
-
-    return jsonify({
-        "success": True,
-        "message": "已设为默认偏好"
+        "message": "模版已删除",
     })
 
 
 # ==================== 导出 API ====================
 
-@app.route('/api/export/<filename>/csv', methods=['POST'])
-def export_csv_with_preference(filename):
-    """按指定偏好导出 CSV"""
+def _save_last_export_template(template_id: int) -> None:
+    """保存上次导出使用的模版 ID"""
+    setting = AppSetting.query.get('last_export_template_id')
+    if setting:
+        setting.value = str(template_id)
+    else:
+        setting = AppSetting(key='last_export_template_id', value=str(template_id))
+        db.session.add(setting)
+    db.session.commit()
+
+
+def _content_disposition_attachment(display_filename: str) -> str:
+    """生成 Content-Disposition 头，支持中文等非 ASCII 文件名（RFC 5987）。"""
+    try:
+        display_filename.encode('ascii')
+        return f'attachment; filename="{display_filename}"'
+    except UnicodeEncodeError:
+        encoded = quote(display_filename, safe='')
+        ext = display_filename.rsplit('.', 1)[-1] if '.' in display_filename else 'bin'
+        return f"attachment; filename=download.{ext}; filename*=UTF-8''{encoded}"
+
+
+@app.route('/api/export/<path:filename>/csv', methods=['POST'])
+def export_csv_with_template(filename: str):
+    """按指定模版导出 CSV（不含序号列）"""
     full_path = join(app.config['UPLOAD_FOLDER'], filename)
     if not exists(full_path):
         abort(404)
 
     data = request.get_json() or {}
-    pref_id = data.get('preference_id')
+    template_id = data.get('template_id')
 
-    if pref_id:
-        pref = ColumnPreference.query.get(pref_id)
-        columns = json.loads(pref.columns_json) if pref else DEFAULT_COLUMNS
+    if template_id:
+        tpl = ColumnTemplate.query.get(template_id)
+        columns = tpl.columns if tpl else DEFAULT_COLUMNS
+        _save_last_export_template(template_id)
     else:
         columns = DEFAULT_COLUMNS
 
     testcases = get_xmind_testcase_list(full_path)
     csv_content = generate_csv_with_columns(testcases, columns)
 
+    base_name = filename[:-6] if filename.endswith('.xmind') else filename
     return Response(
         csv_content,
         mimetype='text/csv',
-        headers={'Content-Disposition': f'attachment; filename={filename[:-6]}.csv'}
+        headers={'Content-Disposition': _content_disposition_attachment(f'{base_name}.csv')},
     )
 
 
-@app.route('/api/export/<filename>/xml', methods=['POST'])
-def export_xml_with_preference(filename):
-    """按指定偏好导出 XML"""
+@app.route('/api/export/<path:filename>/xml', methods=['POST'])
+def export_xml_with_template(filename: str):
+    """按指定模版导出 XML"""
     full_path = join(app.config['UPLOAD_FOLDER'], filename)
     if not exists(full_path):
         abort(404)
 
     data = request.get_json() or {}
-    pref_id = data.get('preference_id')
+    template_id = data.get('template_id')
 
-    if pref_id:
-        pref = ColumnPreference.query.get(pref_id)
-        columns = json.loads(pref.columns_json) if pref else DEFAULT_COLUMNS
+    if template_id:
+        tpl = ColumnTemplate.query.get(template_id)
+        columns = tpl.columns if tpl else DEFAULT_COLUMNS
+        _save_last_export_template(template_id)
     else:
         columns = DEFAULT_COLUMNS
 
     testcases = get_xmind_testcase_list(full_path)
     xml_content = generate_xml_with_columns(testcases, columns)
 
+    base_name = filename[:-6] if filename.endswith('.xmind') else filename
     return Response(
         xml_content,
         mimetype='application/xml',
-        headers={'Content-Disposition': f'attachment; filename={filename[:-6]}.xml'}
+        headers={'Content-Disposition': _content_disposition_attachment(f'{base_name}.xml')},
     )
 
 

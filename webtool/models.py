@@ -7,14 +7,14 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-# 默认列配置
+# 默认列配置：所属模块、用例标题、前置条件、步骤、预期、优先级
 DEFAULT_COLUMNS = [
-    {"id": "suite", "name": "所属模块", "visible": True, "order": 1, "is_custom": False},
-    {"id": "name", "name": "用例标题", "visible": True, "order": 2, "is_custom": False},
-    {"id": "preconditions", "name": "前置条件", "visible": True, "order": 3, "is_custom": False},
-    {"id": "steps", "name": "步骤", "visible": True, "order": 4, "is_custom": False},
-    {"id": "expectedresults", "name": "预期", "visible": True, "order": 5, "is_custom": False},
-    {"id": "importance", "name": "优先级", "visible": True, "order": 6, "is_custom": False},
+    {"id": "suite", "name": "所属模块", "order": 1, "is_custom": False, "rich_text_break": False, "empty_check": False},
+    {"id": "name", "name": "用例标题", "order": 2, "is_custom": False, "rich_text_break": False, "empty_check": False},
+    {"id": "preconditions", "name": "前置条件", "order": 3, "is_custom": False, "rich_text_break": False, "empty_check": False},
+    {"id": "steps", "name": "步骤", "order": 4, "is_custom": False, "rich_text_break": False, "empty_check": False},
+    {"id": "expectedresults", "name": "预期", "order": 5, "is_custom": False, "rich_text_break": False, "empty_check": False},
+    {"id": "importance", "name": "优先级", "order": 6, "is_custom": False, "rich_text_break": False, "empty_check": False},
 ]
 
 
@@ -38,14 +38,14 @@ class Record(db.Model):
         }
 
 
-class ColumnPreference(db.Model):
-    """列偏好配置"""
-    __tablename__ = 'column_preferences'
+class ColumnTemplate(db.Model):
+    """列模版配置"""
+    __tablename__ = 'column_preferences'  # 保持表名兼容旧数据
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     columns_json = db.Column(db.Text, nullable=False)
-    is_default = db.Column(db.Boolean, default=False)
+    header_color = db.Column(db.String(20), default='#fef2f2')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -64,7 +64,15 @@ class ColumnPreference(db.Model):
             'id': self.id,
             'name': self.name,
             'columns': self.columns,
-            'is_default': self.is_default,
+            'header_color': self.header_color or '#fef2f2',
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+
+
+class AppSetting(db.Model):
+    """应用设置（如上次导出使用的模版 ID）"""
+    __tablename__ = 'app_settings'
+
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.Text)
