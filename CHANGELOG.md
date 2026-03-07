@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-03-07
+
+### Added ✨
+
+- **预览界面列自定义**: 用户可以自定义预览页面显示的列
+  - 偏好管理 API: 保存和加载用户的列偏好设置
+  - 自定义列导出: 支持按用户选择的列导出 CSV
+  - 动态列渲染: 预览页面根据用户偏好动态显示列
+  - 拖拽排序: 支持拖拽调整列顺序
+- **模版管理功能**: 管理测试用例导出模版
+  - 后端模版 API: 创建、编辑、删除模版
+  - 空值检测 API: 检测 XMind 中的空值字段
+  - 前端模版管理: 分页、搜索、编辑模版
+  - 空值校验提示: 在预览页面标识空值字段
+- **Flask-SQLAlchemy 集成**: 引入数据库支持
+  - 数据库模型: UserPreference, Template 等模型
+  - 持久化存储: 用户偏好和模版数据持久化
+
+### Security 🔒
+
+- **XSS 漏洞修复**: 转义所有用户输入，防止跨站脚本攻击
+  - HTML 转义: 对 XMind 内容进行 HTML 转义
+  - JavaScript 转义: 防止注入攻击
+
+### Changed 🔄
+
+- 重构 application.py 使用 Flask-SQLAlchemy
+- 预览页面模板重构支持动态列渲染
+- 使用内置 tomllib 替代 toml 库（Python 3.11+）
+
+### Fixed 🐛
+
+- 修复 Flask 端口占用问题
+- 自动清理占用的端口
+- 改进 preview.html 无障碍性
+- 文档 CDN 依赖说明
+
+### Documentation 📝
+
+- 添加预览界面列自定义功能设计文档
+- 添加预览界面列自定义功能实现计划
+
+---
+
 ## [1.7.3] - 2026-03-04
 
 ### Added ✨
